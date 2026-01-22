@@ -1,6 +1,6 @@
 import preferences from "@ohos.data.preferences";
 import common from "@ohos.app.ability.common";
-import { Unknown } from "model";
+import { Unknown } from "@core/model";
 
 /**
  * @file Preferences 工具类，封装本地轻量级存储（@ohos.data.preferences）。

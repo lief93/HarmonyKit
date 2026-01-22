@@ -1,5 +1,5 @@
-import { ColumnCenter } from "designsystem";
-import { AppNavDestination, BaseNetWorkView } from "ui";
+import { ColumnCenter } from "@core/designsystem";
+import { AppNavDestination, BaseNetWorkView } from "@core/ui";
 import NetworkDemoViewModel from "../viewmodel/NetworkDemoViewModel";
 
 /**

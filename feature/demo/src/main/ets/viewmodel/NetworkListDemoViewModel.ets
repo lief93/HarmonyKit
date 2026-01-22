@@ -1,6 +1,7 @@
-import { BaseNetWorkListViewModel } from "base";
-import { GoodsRepository } from "data";
-import { Goods, GoodsSearchRequest, NetworkPageData, NetworkResponse } from "model";
+import { BaseNetWorkListViewModel } from "@core/base";
+import { GoodsRepository } from "@foundation/repository";
+import { Goods, GoodsSearchRequest } from "@foundation/biz-model";
+import { NetworkPageData, NetworkResponse } from "@core/model";
 
 /**
  * @file Network List Demo 示例页 ViewModel

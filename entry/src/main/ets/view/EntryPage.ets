@@ -1,4 +1,4 @@
-import { getHostCtx } from "util";
+import { ContextUtil } from "@core/util";
 import { NavigationHost } from "../navigation/NavigationHost";
 import EntryViewModel from "../viewmodel/EntryViewModel";
 
@@ -16,7 +16,7 @@ struct EntryPage {
    * @returns {void} 无返回值
    */
   aboutToAppear(): void {
-    const hostContext = getHostCtx(this);
+    const hostContext = ContextUtil.getHostCtx();
     if (!hostContext) {
       console.error("[EntryPage] Failed to obtain host context.");
       return;

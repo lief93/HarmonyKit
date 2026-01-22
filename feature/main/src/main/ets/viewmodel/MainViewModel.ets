@@ -1,4 +1,4 @@
-import { BaseViewModel } from "base";
+import { BaseViewModel } from "@core/base";
 import { MainTabItem } from "../model/MainTabItem";
 
 /**

@@ -1,10 +1,10 @@
-import { BaseViewModel } from "base";
-import { AuthRepository } from "data";
-import { Auth, PasswordLoginRequest } from "model";
-import { navigateBack } from "navigation";
-import { RequestHelper } from "result";
-import { getUserState, UserState } from "state";
-import { ToastUtils } from "util";
+import { BaseViewModel } from "@core/base";
+import { AuthRepository } from "@foundation/repository";
+import { Auth, PasswordLoginRequest } from "@foundation/biz-model";
+import { navigateBack } from "@foundation/biz-navigation";
+import { RequestHelper } from "@core/result";
+import { getUserState, UserState } from "@foundation/biz-state";
+import { ToastUtils } from "@core/util";
 
 /**
  * @file 登录页 ViewModel

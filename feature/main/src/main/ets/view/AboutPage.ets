@@ -1,4 +1,4 @@
-import { IBestCell, IBestCellGroup } from "ibestui";
+import { IBestCell, IBestCellGroup } from "@core/ibestui";
 import {
   ColumnBase,
   MediumPaddingVerticalScroll,
@@ -8,9 +8,9 @@ import {
   size,
   SpaceVerticalLarge,
   SpaceVerticalSmall
-} from "designsystem";
-import { getWindowSafeAreaState, WindowSafeAreaState } from "state";
-import { AppNavDestination } from "ui";
+} from "@core/designsystem";
+import { getWindowSafeAreaState, WindowSafeAreaState } from "@core/state";
+import { AppNavDestination } from "@core/ui";
 import { AboutLinkItem } from "../model/AboutLinkItem";
 import AboutViewModel from "../viewmodel/AboutViewModel";
 

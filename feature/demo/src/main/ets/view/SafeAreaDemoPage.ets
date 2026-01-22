@@ -1,7 +1,7 @@
-import { IBestCell, IBestCellGroup } from "ibestui";
-import { ColumnBase, MediumPaddingVerticalScroll, P100, SpaceVerticalSmall } from "designsystem";
-import { getWindowSafeAreaState, WindowSafeAreaState } from "state";
-import { AppNavDestination } from "ui";
+import { IBestCell, IBestCellGroup } from "@core/ibestui";
+import { ColumnBase, MediumPaddingVerticalScroll, P100, SpaceVerticalSmall } from "@core/designsystem";
+import { getWindowSafeAreaState, WindowSafeAreaState } from "@core/state";
+import { AppNavDestination } from "@core/ui";
 import SafeAreaDemoViewModel from "../viewmodel/SafeAreaDemoViewModel";
 
 /**

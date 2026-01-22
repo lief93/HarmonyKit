@@ -1,5 +1,5 @@
-import { NetworkPageData, NetworkPageMeta, NetworkResponse } from "model";
-import { RequestHelper } from "result";
+import { NetworkPageData, NetworkPageMeta, NetworkResponse } from "@core/model";
+import { RequestHelper } from "@core/result";
 import { BaseNetWorkListUiState } from "../state/BaseNetWorkListUiState";
 import { BaseViewModel } from "./BaseViewModel";
 import { JSON } from "@kit.ArkTS";

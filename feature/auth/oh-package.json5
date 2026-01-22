@@ -1,20 +1,21 @@
 {
-  "name": "auth",
+  "name": "@feature/auth",
   "version": "1.0.0",
   "description": "Please describe the basic information.",
   "main": "Index.ets",
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "navigation": "file:../../core/navigation",
-    "state": "file:../../core/state",
-    "model": "file:../../core/model",
-    "data": "file:../../core/data",
-    "result": "file:../../core/result",
-    "base": "file:../../core/base",
-    "util": "file:../../core/util",
-    "designsystem": "file:../../core/designsystem",
-    "ui": "file:../../core/ui",
-    "ibestui": "file:../../core/ibestui"
+    "@foundation/biz-navigation": "file:../../foundation/biz_navigation",
+    "@foundation/biz-state": "file:../../foundation/biz_state",
+    "@foundation/biz-model": "file:../../foundation/biz_model",
+    "@foundation/repository": "file:../../foundation/repository",
+    "@core/navigation": "file:../../core/navigation",
+    "@core/result": "file:../../core/result",
+    "@core/base": "file:../../core/base",
+    "@core/util": "file:../../core/util",
+    "@core/designsystem": "file:../../core/designsystem",
+    "@core/ui": "file:../../core/ui",
+    "@core/ibestui": "file:../../core/ibestui"
   }
 }

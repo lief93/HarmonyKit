@@ -1,5 +1,5 @@
-import { IBestButton, IBestEmpty } from "ibestui";
-import { P100, P70, SpaceVerticalMedium } from "designsystem";
+import { IBestButton, IBestEmpty } from "@core/ibestui";
+import { P100, P70, SpaceVerticalMedium } from "@core/designsystem";
 
 /**
  * @file 通用缺省页组件（基于 IBestEmpty 封装）

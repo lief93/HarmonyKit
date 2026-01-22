@@ -1,6 +1,6 @@
-import { IBestButton } from "ibestui";
-import { ColumnBase, MediumPaddingVerticalScroll, P100 } from "designsystem";
-import { AppNavDestination } from "ui";
+import { IBestButton } from "@core/ibestui";
+import { ColumnBase, MediumPaddingVerticalScroll, P100 } from "@core/designsystem";
+import { AppNavDestination } from "@core/ui";
 import LoginViewModel from "../viewmodel/LoginViewModel";
 
 /**

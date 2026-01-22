@@ -1,5 +1,5 @@
-import { RouteBuild, RouteGraph } from "navigation";
-import { DemoRoutes } from "navigation/src/main/ets/demo/DemoRoutes";
+import { RouteBuild, RouteGraph } from "@core/navigation";
+import { DemoRoutes } from "@foundation/biz-navigation/src/main/ets/demo/DemoRoutes";
 import { NetworkDemoNav } from "./NetworkDemoNav";
 import { NetworkListDemoNav } from "./NetworkListDemoNav";
 import { DatabaseNav } from "./DatabaseNav";

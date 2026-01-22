@@ -1,12 +1,12 @@
 {
-  "name": "util",
+  "name": "@core/util",
   "version": "1.0.0",
   "description": "Please describe the basic information.",
   "main": "Index.ets",
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "model": "file:../model",
-    "ibestui": "file:../ibestui"
+    "@core/model": "file:../model",
+    "@core/ibestui": "file:../ibestui"
   }
 }

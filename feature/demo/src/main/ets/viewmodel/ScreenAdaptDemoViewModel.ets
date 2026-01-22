@@ -1,4 +1,4 @@
-import { BaseViewModel } from "base";
+import { BaseViewModel } from "@core/base";
 
 /**
  * @file 屏幕适配示例页 ViewModel

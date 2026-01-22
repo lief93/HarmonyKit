@@ -1,5 +1,5 @@
-import { RouteBuild, RouteGraph } from "navigation";
-import { MainRoutes } from "navigation/src/main/ets/main/MainRoutes";
+import { RouteBuild, RouteGraph } from "@core/navigation";
+import { MainRoutes } from "@foundation/biz-navigation/src/main/ets/main/MainRoutes";
 import { MainNav } from "./MainNav";
 
 /**

@@ -4,10 +4,6 @@
  */
 
 export {
-  UserState, getUserState
-} from "./src/main/ets/UserState";
-
-export {
   BREAKPOINT_STATE_KEY, BreakpointState, getBreakpointState, bp
 } from "./src/main/ets/BreakpointState";
 
@@ -16,12 +12,6 @@ export {
   WindowSafeAreaState,
   getWindowSafeAreaState
 } from "./src/main/ets/WindowSafeAreaState";
-
-export {
-  DEMO_COUNTER_KEY,
-  DemoCounterState,
-  getDemoCounterState
-} from "./src/main/ets/DemoCounterState";
 
 export {
   BreakpointType,

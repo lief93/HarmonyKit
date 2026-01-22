@@ -1,15 +1,15 @@
 {
-  "name": "ui",
+  "name": "@core/ui",
   "version": "1.0.0",
   "description": "Please describe the basic information.",
   "main": "Index.ets",
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "base": "file:../base",
-    "designsystem": "file:../designsystem",
-    "model": "file:../model",
-    "state": "file:../state",
-    "ibestui": "file:../ibestui"
+    "@core/base": "file:../base",
+    "@core/designsystem": "file:../designsystem",
+    "@core/model": "file:../model",
+    "@core/state": "file:../state",
+    "@core/ibestui": "file:../ibestui"
   }
 }

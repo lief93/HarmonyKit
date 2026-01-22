@@ -1,5 +1,5 @@
-import { BaseViewModel } from "base";
-import { DemoResult, navigateBackWithResult } from "navigation";
+import { BaseViewModel } from "@core/base";
+import { DemoResult, navigateBackWithResult } from "@foundation/biz-navigation";
 
 /**
  * @file 结果回传示例页 ViewModel

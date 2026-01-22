@@ -1,5 +1,5 @@
-import { RouteBuild, RouteGraph } from "navigation";
-import { UserRoutes } from "navigation/src/main/ets/user/UserRoutes";
+import { RouteBuild, RouteGraph } from "@core/navigation";
+import { UserRoutes } from "@foundation/biz-navigation/src/main/ets/user/UserRoutes";
 import { ProfileNav } from "./ProfileNav";
 
 /**

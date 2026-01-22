@@ -1,5 +1,5 @@
-import { BaseViewModel } from "base";
-import { DemoNavigator, DemoResult, UserNavigator } from "navigation";
+import { BaseViewModel } from "@core/base";
+import { DemoNavigator, DemoResult, UserNavigator } from "@foundation/biz-navigation";
 import { NavigationCardItem } from "../model/NavigationCardItem";
 
 /**

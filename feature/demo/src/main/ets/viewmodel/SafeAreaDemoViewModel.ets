@@ -1,4 +1,4 @@
-import { BaseViewModel } from "base";
+import { BaseViewModel } from "@core/base";
 
 /**
  * @file 安全区示例页 ViewModel

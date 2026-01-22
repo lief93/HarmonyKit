@@ -1,4 +1,4 @@
-import { IBestPullRefresh } from "ibestui";
+import { IBestPullRefresh } from "@core/ibestui";
 
 /**
  * @file 刷新布局组件（基于 IBestPullRefresh）

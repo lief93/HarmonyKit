@@ -1,4 +1,4 @@
-import { BaseNetWorkUiState } from "base";
+import { BaseNetWorkUiState } from "@core/base";
 import { PageLoading } from "../loading/PageLoading";
 import { EmptyNetwork } from "../empty/EmptyNetwork";
 

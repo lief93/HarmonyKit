@@ -1,5 +1,5 @@
 {
-  "name": "designsystem",
+  "name": "@core/designsystem",
   "version": "1.0.0",
   "description": "Please describe the basic information.",
   "main": "Index.ets",

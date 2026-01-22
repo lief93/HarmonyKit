@@ -1,6 +1,6 @@
-import { BaseViewModel } from "base";
-import { navigateBack } from "navigation";
-import { getUserState, UserState } from "state";
+import { BaseViewModel } from "@core/base";
+import { navigateBack } from "@foundation/biz-navigation";
+import { getUserState, UserState } from "@foundation/biz-state";
 
 /**
  * @file 个人中心 ViewModel

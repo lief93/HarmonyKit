@@ -1,6 +1,6 @@
 import { abilityAccessCtrl, PermissionRequestResult, Permissions, Want } from "@kit.AbilityKit";
 import { bundleManager } from '@kit.AbilityKit';
-import { Unknown } from "model";
+import { Unknown } from "@core/model";
 import { ContextUtil } from "../context/ContextUtil";
 import common from "@ohos.app.ability.common";
 

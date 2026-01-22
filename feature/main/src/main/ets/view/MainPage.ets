@@ -1,8 +1,8 @@
-import { AppNavDestination } from "ui";
-import { ColumnCenter, P100, size, SpaceVerticalXSmall } from "designsystem";
+import { AppNavDestination } from "@core/ui";
+import { ColumnCenter, P100, size, SpaceVerticalXSmall } from "@core/designsystem";
 import {
   bp, BreakpointState, getBreakpointState, getWindowSafeAreaState, WindowSafeAreaState
-} from "state";
+} from "@core/state";
 import MainViewModel from "../viewmodel/MainViewModel";
 import { CorePage } from "./CorePage";
 import { NavigationPage } from "./NavigationPage";

@@ -5,9 +5,9 @@ import {
   SpaceHorizontalSmall,
   SpaceVerticalLarge,
   SpaceVerticalSmall
-} from "designsystem";
-import { bp, BreakpointState, getBreakpointState } from "state";
-import { AppNavDestination } from "ui";
+} from "@core/designsystem";
+import { bp, BreakpointState, getBreakpointState } from "@core/state";
+import { AppNavDestination } from "@core/ui";
 import ScreenAdaptDemoViewModel from "../viewmodel/ScreenAdaptDemoViewModel";
 
 /**

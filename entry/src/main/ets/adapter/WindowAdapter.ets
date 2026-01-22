@@ -1,6 +1,6 @@
 import { display, window } from "@kit.ArkUI";
 import { BusinessError } from "@kit.BasicServicesKit";
-import { BreakpointState, SafeAreaInsets, WindowSafeAreaState } from "state";
+import { BreakpointState, SafeAreaInsets, WindowSafeAreaState } from "@core/state";
 import { Context } from "@kit.AbilityKit";
 
 /**

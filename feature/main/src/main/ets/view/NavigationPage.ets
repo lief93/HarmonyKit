@@ -1,7 +1,7 @@
-import { IBestCell, IBestCellGroup } from "ibestui";
-import { ColumnBase, MediumPaddingVerticalScroll, P100, P80, SpaceVerticalLarge } from "designsystem";
-import { AppNavDestination } from "ui";
-import { getWindowSafeAreaState, WindowSafeAreaState } from "state";
+import { IBestCell, IBestCellGroup } from "@core/ibestui";
+import { ColumnBase, MediumPaddingVerticalScroll, P100, P80, SpaceVerticalLarge } from "@core/designsystem";
+import { AppNavDestination } from "@core/ui";
+import { getWindowSafeAreaState, WindowSafeAreaState } from "@core/state";
 import NavigationViewModel from "../viewmodel/NavigationViewModel";
 import { NavigationCardItem } from "../model/NavigationCardItem";
 

@@ -1,5 +1,5 @@
-import { BaseViewModel } from "base";
-import { DemoCounterState, getDemoCounterState } from "state";
+import { BaseViewModel } from "@core/base";
+import { DemoCounterState, getDemoCounterState } from "@foundation/biz-state";
 
 /**
  * @file 状态管理示例页 ViewModel

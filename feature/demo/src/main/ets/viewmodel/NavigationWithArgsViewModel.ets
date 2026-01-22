@@ -1,7 +1,7 @@
-import { BaseViewModel } from "base";
-import { getRouteParams } from "navigation";
-import { DemoGoodsParam } from "navigation/src/main/ets/demo/DemoParam";
-import { DemoRoutes } from "navigation/src/main/ets/demo/DemoRoutes";
+import { BaseViewModel } from "@core/base";
+import { getRouteParams } from "@foundation/biz-navigation";
+import { DemoGoodsParam } from "@foundation/biz-navigation/src/main/ets/demo/DemoParam";
+import { DemoRoutes } from "@foundation/biz-navigation/src/main/ets/demo/DemoRoutes";
 
 /**
  * @file 带参跳转示例页 ViewModel

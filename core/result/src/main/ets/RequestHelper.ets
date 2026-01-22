@@ -1,5 +1,5 @@
-import { NetworkResponse } from "model";
-import { ToastUtils } from "util";
+import { NetworkResponse } from "@core/model";
+import { ToastUtils } from "@core/util";
 
 /**
  * @file 网络请求结果处理

@@ -1,7 +1,7 @@
-import { BaseViewModel } from "base";
+import { BaseViewModel } from "@core/base";
 import { Want } from "@kit.AbilityKit";
 import common from "@ohos.app.ability.common";
-import { ContextUtil } from "util";
+import { ContextUtil } from "@core/util";
 import { AboutLinkItem } from "../model/AboutLinkItem";
 
 /**

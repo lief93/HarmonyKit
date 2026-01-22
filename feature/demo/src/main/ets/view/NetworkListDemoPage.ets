@@ -1,7 +1,7 @@
-import { IBestCard, IBestCell } from "ibestui";
-import { P100 } from "designsystem";
-import { Goods } from "model";
-import { AppNavDestination, BaseNetWorkListView, RefreshLayout } from "ui";
+import { IBestCard, IBestCell } from "@core/ibestui";
+import { P100 } from "@core/designsystem";
+import { Goods } from "@foundation/biz-model";
+import { AppNavDestination, BaseNetWorkListView, RefreshLayout } from "@core/ui";
 import NetworkListDemoViewModel from "../viewmodel/NetworkListDemoViewModel";
 
 /**

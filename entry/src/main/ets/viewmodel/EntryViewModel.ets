@@ -1,5 +1,5 @@
 import common from "@ohos.app.ability.common";
-import { getBreakpointState, getWindowSafeAreaState } from "state";
+import { getBreakpointState, getWindowSafeAreaState } from "@core/state";
 import { WindowAdapter } from "../adapter/WindowAdapter";
 
 /**

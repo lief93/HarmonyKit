@@ -1,6 +1,6 @@
-import { IBestButton, IBestCell, IBestCellGroup } from "ibestui";
-import { ColumnBase, MediumPaddingVerticalScroll, P100, SpaceVerticalLarge } from "designsystem";
-import { AppNavDestination } from "ui";
+import { IBestButton, IBestCell, IBestCellGroup } from "@core/ibestui";
+import { ColumnBase, MediumPaddingVerticalScroll, P100, SpaceVerticalLarge } from "@core/designsystem";
+import { AppNavDestination } from "@core/ui";
 import ProfileViewModel from "../viewmodel/ProfileViewModel";
 
 /**

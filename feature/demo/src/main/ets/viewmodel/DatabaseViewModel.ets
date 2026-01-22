@@ -1,5 +1,5 @@
-import { BaseViewModel } from "base";
-import { DemoEntity, DemoRepository } from "data";
+import { BaseViewModel } from "@core/base";
+import { DemoEntity, DemoRepository } from "@foundation/repository";
 
 /**
  * @file 数据库示例页 ViewModel

@@ -1,5 +1,5 @@
-import { NetworkResponse } from "model";
-import { RequestHelper } from "result";
+import { NetworkResponse } from "@core/model";
+import { RequestHelper } from "@core/result";
 import { BaseViewModel } from "./BaseViewModel";
 import { BaseNetWorkUiState } from "../state/BaseNetWorkUiState";
 

@@ -1,6 +1,6 @@
-import { IBestButton } from "ibestui";
-import { ColumnBase, MediumPaddingVerticalScroll, P100, SpaceVerticalLarge } from "designsystem";
-import { AppNavDestination } from "ui";
+import { IBestButton } from "@core/ibestui";
+import { ColumnBase, MediumPaddingVerticalScroll, P100, SpaceVerticalLarge } from "@core/designsystem";
+import { AppNavDestination } from "@core/ui";
 import NetworkRequestViewModel from "../viewmodel/NetworkRequestViewModel";
 
 /**

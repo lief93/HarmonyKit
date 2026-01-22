@@ -1,5 +1,5 @@
-import { ColumnCenter } from "designsystem";
-import { AppNavDestination } from "ui";
+import { ColumnCenter } from "@core/designsystem";
+import { AppNavDestination } from "@core/ui";
 import NavigationWithArgsViewModel from "../viewmodel/NavigationWithArgsViewModel";
 
 /**

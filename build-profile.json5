@@ -39,20 +39,8 @@
       ]
     },
     {
-      "name": "base",
-      "srcPath": "./core/base",
-    },
-    {
-      "name": "data",
-      "srcPath": "./core/data",
-    },
-    {
-      "name": "database",
-      "srcPath": "./core/database",
-    },
-    {
-      "name": "datastore",
-      "srcPath": "./core/datastore",
+      "name": "model",
+      "srcPath": "./core/model",
     },
     {
       "name": "designsystem",
@@ -63,20 +51,16 @@
       "srcPath": "./core/ibestui",
     },
     {
-      "name": "model",
-      "srcPath": "./core/model",
-    },
-    {
-      "name": "navigation",
-      "srcPath": "./core/navigation",
-    },
-    {
-      "name": "network",
-      "srcPath": "./core/network",
+      "name": "util",
+      "srcPath": "./core/util",
     },
     {
       "name": "result",
       "srcPath": "./core/result",
+    },
+    {
+      "name": "base",
+      "srcPath": "./core/base",
     },
     {
       "name": "state",
@@ -87,8 +71,36 @@
       "srcPath": "./core/ui",
     },
     {
-      "name": "util",
-      "srcPath": "./core/util",
+      "name": "navigation",
+      "srcPath": "./core/navigation",
+    },
+    {
+      "name": "biz_model",
+      "srcPath": "./foundation/biz_model",
+    },
+    {
+      "name": "biz_state",
+      "srcPath": "./foundation/biz_state",
+    },
+    {
+      "name": "biz_navigation",
+      "srcPath": "./foundation/biz_navigation",
+    },
+    {
+      "name": "datastore",
+      "srcPath": "./foundation/datastore",
+    },
+    {
+      "name": "network",
+      "srcPath": "./foundation/network",
+    },
+    {
+      "name": "database",
+      "srcPath": "./foundation/database",
+    },
+    {
+      "name": "repository",
+      "srcPath": "./foundation/repository",
     },
     {
       "name": "auth",

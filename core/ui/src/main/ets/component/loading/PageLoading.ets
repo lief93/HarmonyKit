@@ -1,4 +1,4 @@
-import { P100, SpaceVerticalMedium } from "designsystem";
+import { P100, SpaceVerticalMedium } from "@core/designsystem";
 import { Loading } from "./Loading";
 
 /**

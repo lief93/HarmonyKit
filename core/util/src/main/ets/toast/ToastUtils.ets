@@ -1,4 +1,4 @@
-import { IBestToast } from "ibestui";
+import { IBestToast } from "@core/ibestui";
 
 /**
  * @file Toast 工具类，封装 IBestToast 常用能力

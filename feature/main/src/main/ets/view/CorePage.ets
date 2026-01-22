@@ -1,4 +1,4 @@
-import { IBestCell, IBestCellGroup } from "ibestui";
+import { IBestCell, IBestCellGroup } from "@core/ibestui";
 import {
   ColumnBase,
   MediumPaddingVerticalScroll,
@@ -6,11 +6,12 @@ import {
   P80,
   SpaceVerticalLarge,
   SpaceVerticalSmall
-} from "designsystem";
-import { AppNavDestination } from "ui";
+} from "@core/designsystem";
+import { AppNavDestination } from "@core/ui";
 import CoreViewModel from "../viewmodel/CoreViewModel";
 import { CoreCardItem } from "../model/CoreCardItem";
-import { DemoCounterState, getDemoCounterState, getWindowSafeAreaState, WindowSafeAreaState } from "state";
+import { getWindowSafeAreaState, WindowSafeAreaState } from "@core/state";
+import { DemoCounterState, getDemoCounterState } from "@foundation/biz-state";
 
 /**
  * @file 核心页面视图

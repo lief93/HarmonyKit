@@ -1,8 +1,8 @@
-import { IBestButton } from "ibestui";
+import { IBestButton } from "@core/ibestui";
 import {
   MediumPaddingVerticalScroll, P100, SpaceVerticalLarge, SpaceVerticalSmall
-} from "designsystem";
-import { AppNavDestination } from "ui";
+} from "@core/designsystem";
+import { AppNavDestination } from "@core/ui";
 import StateManagementViewModel from "../viewmodel/StateManagementViewModel";
 
 /**

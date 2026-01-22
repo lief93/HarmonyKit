@@ -1,5 +1,5 @@
-import { BaseViewModel } from "base";
-import { getWindowSafeAreaState, WindowSafeAreaState } from "state";
+import { BaseViewModel } from "@core/base";
+import { getWindowSafeAreaState, WindowSafeAreaState } from "@core/state";
 
 /**
  * @file 通用导航容器：统一 NavDestination 与 ViewModel 生命周期转发

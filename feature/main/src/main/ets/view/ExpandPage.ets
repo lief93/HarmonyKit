@@ -1,7 +1,7 @@
-import { IBestCell, IBestCellGroup } from "ibestui";
-import { MediumPaddingVerticalScroll, P80 } from "designsystem";
-import { getWindowSafeAreaState, WindowSafeAreaState } from "state";
-import { AppNavDestination } from "ui";
+import { IBestCell, IBestCellGroup } from "@core/ibestui";
+import { MediumPaddingVerticalScroll, P80 } from "@core/designsystem";
+import { getWindowSafeAreaState, WindowSafeAreaState } from "@core/state";
+import { AppNavDestination } from "@core/ui";
 import { ExpandCardItem } from "../model/ExpandCardItem";
 import ExpandViewModel from "../viewmodel/ExpandViewModel";
 

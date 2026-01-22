@@ -7,7 +7,7 @@ import {
   IBestFieldValueType,
   IBestIcon,
   IBestSwipeCell
-} from "ibestui";
+} from "@core/ibestui";
 import {
   ColumnBase,
   MediumPaddingVerticalScroll,
@@ -15,9 +15,9 @@ import {
   RowStartCenter,
   SpaceVerticalLarge,
   SpaceVerticalMedium,
-} from "designsystem";
-import { DemoEntity } from "data";
-import { AppNavDestination } from "ui";
+} from "@core/designsystem";
+import { DemoEntity } from "@foundation/repository";
+import { AppNavDestination } from "@core/ui";
 import DatabaseViewModel from "../viewmodel/DatabaseViewModel";
 
 /**

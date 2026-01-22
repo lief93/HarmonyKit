@@ -1,5 +1,6 @@
-import { MainPage } from 'main';
-import { RouteBuild, NAV_PATH_STACK_KEY, setNavPathStack } from 'navigation';
+import { MainPage } from '@feature/main';
+import { RouteBuild } from '@core/navigation';
+import { NAV_PATH_STACK_KEY, setNavPathStack } from '@foundation/biz-navigation';
 
 /**
  * @file 挂载全局导航栈

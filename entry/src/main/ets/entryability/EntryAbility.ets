@@ -1,13 +1,13 @@
 import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
-import { IBestUIInitializer } from "ibestui";
-import { MainGraph } from 'main';
-import { AuthGraph } from 'auth';
-import { UserGraph } from 'user';
-import { IBestORMInit } from 'database';
-import { ContextUtil } from 'util';
-import { DemoGraph } from 'demo';
+import { IBestUIInitializer } from "@core/ibestui";
+import { MainGraph } from '@feature/main';
+import { AuthGraph } from '@feature/auth';
+import { UserGraph } from '@feature/user';
+import { IBestORMInit } from '@foundation/database';
+import { ContextUtil } from '@core/util';
+import { DemoGraph } from '@feature/demo';
 
 const DOMAIN = 0x0000;
 

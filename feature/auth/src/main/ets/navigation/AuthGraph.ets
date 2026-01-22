@@ -1,5 +1,5 @@
-import { RouteBuild, RouteGraph } from "navigation";
-import { AuthRoutes } from "navigation/src/main/ets/auth/AuthRoutes";
+import { RouteBuild, RouteGraph } from "@core/navigation";
+import { AuthRoutes } from "@foundation/biz-navigation/src/main/ets/auth/AuthRoutes";
 import { LoginNav } from "./LoginNav";
 
 /**

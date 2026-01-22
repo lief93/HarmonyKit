@@ -1,6 +1,6 @@
-import { IBestButton, IBestCellGroup, IBestField, IBestFieldValueType } from "ibestui";
-import { ColumnBase, MediumPaddingVerticalScroll, P100, RowStartCenter, SpaceVerticalMedium } from "designsystem";
-import { AppNavDestination } from "ui";
+import { IBestButton, IBestCellGroup, IBestField, IBestFieldValueType } from "@core/ibestui";
+import { ColumnBase, MediumPaddingVerticalScroll, P100, RowStartCenter, SpaceVerticalMedium } from "@core/designsystem";
+import { AppNavDestination } from "@core/ui";
 import NavigationResultViewModel from "../viewmodel/NavigationResultViewModel";
 
 /**

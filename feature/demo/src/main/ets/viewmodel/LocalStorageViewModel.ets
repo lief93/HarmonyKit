@@ -1,5 +1,5 @@
-import { BaseViewModel } from "base";
-import { AccountStoreRepository } from "data";
+import { BaseViewModel } from "@core/base";
+import { AccountStoreRepository } from "@foundation/repository";
 
 /**
  * @file 本地存储示例页 ViewModel

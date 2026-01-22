@@ -1,8 +1,8 @@
-import { IBestButton, IBestCell, IBestCellGroup, IBestField, IBestFieldValueType } from "ibestui";
+import { IBestButton, IBestCell, IBestCellGroup, IBestField, IBestFieldValueType } from "@core/ibestui";
 import {
   ColumnBase, MediumPaddingVerticalScroll, P100, SpaceVerticalLarge
-} from "designsystem";
-import { AppNavDestination } from "ui";
+} from "@core/designsystem";
+import { AppNavDestination } from "@core/ui";
 import LocalStorageViewModel from "../viewmodel/LocalStorageViewModel";
 
 /**

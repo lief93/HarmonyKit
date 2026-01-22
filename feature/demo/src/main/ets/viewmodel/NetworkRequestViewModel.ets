@@ -1,8 +1,9 @@
-import { BaseViewModel } from "base";
-import { GoodsRepository } from "data";
-import { Goods, GoodsSearchRequest, NetworkPageData } from "model";
-import { RequestHelper } from "result";
-import { ToastUtils } from "util";
+import { BaseViewModel } from "@core/base";
+import { GoodsRepository } from "@foundation/repository";
+import { Goods, GoodsSearchRequest } from "@foundation/biz-model";
+import { NetworkPageData } from "@core/model";
+import { RequestHelper } from "@core/result";
+import { ToastUtils } from "@core/util";
 
 /**
  * @file 通用网络请求示例页 ViewModel
