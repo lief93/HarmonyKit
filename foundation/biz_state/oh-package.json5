@@ -1,0 +1,13 @@
+{
+  "name": "@foundation/biz-state",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "Index.ets",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@foundation/biz-model": "file:../biz_model",
+    "@foundation/repository": "file:../repository",
+    "@core/result": "file:../../core/result"
+  }
+}

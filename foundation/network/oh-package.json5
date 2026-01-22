@@ -1,0 +1,14 @@
+{
+  "name": "@foundation/network",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "Index.ets",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@ohos/axios": "^2.2.6",
+    "@core/model": "file:../../core/model",
+    "@foundation/biz-model": "file:../biz_model",
+    "@foundation/datastore": "file:../datastore"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "network",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "Index.ets",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@ohos/axios": "^2.2.6",
+    "model": "file:../model",
+    "datastore": "file:../datastore"
+  }
+}
