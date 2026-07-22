@@ -11,6 +11,7 @@ const TEST_RESULT_TITLE: string = 'UITest 回传标题';
 const TEST_RESULT_DESC: string = 'UITest 回传说明';
 const MOCK_GOODS_TITLE: string = 'Mock 商品标题';
 const MOCK_GOODS_SUB_TITLE: string = 'Mock 商品副标题';
+const LOADING_TEXT: string = '加载中...';
 const DEFAULT_TIMEOUT: number = 3000;
 const START_TIMEOUT: number = 8000;
 const MAIN_WANT: Want = {
@@ -18,6 +19,36 @@ const MAIN_WANT: Want = {
   moduleName: 'entry',
   abilityName: 'EntryAbility'
 };
+
+class Deferred<T> {
+  readonly promise: Promise<T>;
+  private complete: (value: T) => void = (_value: T): void => {
+  };
+
+  constructor() {
+    this.promise = new Promise<T>((resolve) => {
+      this.complete = (value: T): void => resolve(value);
+    });
+  }
+
+  resolve(value: T): void {
+    this.complete(value);
+  }
+}
+
+function createDeferred<T>(): Deferred<T> {
+  return new Deferred<T>();
+}
+
+function createMockGoodsResponse(): NetworkResponse<Goods> {
+  const goods: Goods = new Goods();
+  goods.id = 1;
+  goods.title = MOCK_GOODS_TITLE;
+  goods.subTitle = MOCK_GOODS_SUB_TITLE;
+  const response: NetworkResponse<Goods> = new NetworkResponse<Goods>();
+  response.data = goods;
+  return response;
+}
 
 function getStringResource(name: string): string {
   const delegator = abilityDelegatorRegistry.getAbilityDelegator();
@@ -37,6 +68,15 @@ async function requireComponent(driver: Driver, on: On, description: string,
 
 async function requireText(driver: Driver, text: string, timeout: number = DEFAULT_TIMEOUT): Promise<Component> {
   return requireComponent(driver, ON.text(text), `text '${text}'`, timeout);
+}
+
+async function requireTextAbsent(driver: Driver, text: string, timeout: number = 500): Promise<void> {
+  const component: Component = await driver.waitForComponent(ON.text(text), timeout);
+  const absent: boolean = component === null || component === undefined;
+  if (!absent) {
+    throw new Error(`text '${text}' is still visible`);
+  }
+  expect(absent).assertTrue();
 }
 
 async function clickText(driver: Driver, text: string, timeout: number = DEFAULT_TIMEOUT): Promise<void> {
@@ -65,7 +105,7 @@ async function clickTextInScroll(driver: Driver, text: string): Promise<void> {
   await component.click();
 }
 
-async function launchMain(driver: Driver): Promise<void> {
+async function launchHost(driver: Driver): Promise<void> {
   const delegator = abilityDelegatorRegistry.getAbilityDelegator();
   await delegator.startAbility(MAIN_WANT);
 
@@ -78,9 +118,19 @@ async function launchMain(driver: Driver): Promise<void> {
     throw new Error('navigation stack was not initialized');
   }
   navPathStack.clear(false);
+}
+
+async function launchMain(driver: Driver): Promise<void> {
+  await launchHost(driver);
 
   await clickText(driver, '核心', START_TIMEOUT);
   await requireText(driver, MAIN_CARD, START_TIMEOUT);
+}
+
+async function openNetworkDemoPage(driver: Driver): Promise<void> {
+  await launchHost(driver);
+  DemoNavigator.toNetworkDemo();
+  await requireText(driver, NETWORK_PAGE_TITLE, START_TIMEOUT);
 }
 
 export default function abilityTest() {
@@ -142,12 +192,7 @@ export default function abilityTest() {
       const mocker: MockKit = new MockKit();
       const repository: GoodsRepository = new GoodsRepository();
       const getGoodsInfo: Function = mocker.mockFunc(repository, repository.getGoodsInfo);
-      const goods: Goods = new Goods();
-      goods.id = 1;
-      goods.title = MOCK_GOODS_TITLE;
-      goods.subTitle = MOCK_GOODS_SUB_TITLE;
-      const response: NetworkResponse<Goods> = new NetworkResponse<Goods>();
-      response.data = goods;
+      const response: NetworkResponse<Goods> = createMockGoodsResponse();
       when(getGoodsInfo)('1').afterReturn(Promise.resolve(response));
       GoodsRepositoryProvider.set(repository);
 
@@ -160,6 +205,35 @@ export default function abilityTest() {
         await requireText(driver, MOCK_GOODS_TITLE, START_TIMEOUT);
         await requireText(driver, MOCK_GOODS_SUB_TITLE);
       } finally {
+        GoodsRepositoryProvider.reset();
+        mocker.clear(repository);
+      }
+    });
+
+    it('showsLoadingUntilMockedNetworkCompletes', 0, async () => {
+      const mocker: MockKit = new MockKit();
+      const repository: GoodsRepository = new GoodsRepository();
+      const getGoodsInfo: Function = mocker.mockFunc(repository, repository.getGoodsInfo);
+      const pendingRequest: Deferred<NetworkResponse<Goods>> = createDeferred<NetworkResponse<Goods>>();
+      const response: NetworkResponse<Goods> = createMockGoodsResponse();
+      when(getGoodsInfo)('1').afterReturn(pendingRequest.promise);
+      GoodsRepositoryProvider.set(repository);
+
+      try {
+        const driver: Driver = Driver.create();
+        await openNetworkDemoPage(driver);
+
+        await requireText(driver, LOADING_TEXT);
+        await requireTextAbsent(driver, MOCK_GOODS_TITLE);
+
+        pendingRequest.resolve(response);
+
+        await requireText(driver, MOCK_GOODS_TITLE, START_TIMEOUT);
+        await requireText(driver, MOCK_GOODS_SUB_TITLE);
+        await driver.delayMs(300);
+        await requireTextAbsent(driver, LOADING_TEXT);
+      } finally {
+        pendingRequest.resolve(response);
         GoodsRepositoryProvider.reset();
         mocker.clear(repository);
       }
