@@ -1,12 +1,16 @@
 import { Want } from '@kit.AbilityKit';
 import { abilityDelegatorRegistry, Component, Driver, ON, On } from '@kit.TestKit';
-import { describe, expect, it } from '@ohos/hypium';
+import { describe, expect, it, MockKit, when } from '@ohos/hypium';
+import { GoodsRepository, GoodsRepositoryProvider } from 'data';
+import { Goods, NetworkResponse } from 'model';
 import { DemoNavigator, getNavPathStack } from 'navigation';
 
 const MAIN_CARD: string = 'Network Demo';
 const NETWORK_PAGE_TITLE: string = 'Base Network 示例';
 const TEST_RESULT_TITLE: string = 'UITest 回传标题';
 const TEST_RESULT_DESC: string = 'UITest 回传说明';
+const MOCK_GOODS_TITLE: string = 'Mock 商品标题';
+const MOCK_GOODS_SUB_TITLE: string = 'Mock 商品副标题';
 const DEFAULT_TIMEOUT: number = 3000;
 const START_TIMEOUT: number = 8000;
 const MAIN_WANT: Want = {
@@ -14,6 +18,11 @@ const MAIN_WANT: Want = {
   moduleName: 'entry',
   abilityName: 'EntryAbility'
 };
+
+function getStringResource(name: string): string {
+  const delegator = abilityDelegatorRegistry.getAbilityDelegator();
+  return delegator.getAppContext().resourceManager.getStringByNameSync(name);
+}
 
 async function requireComponent(driver: Driver, on: On, description: string,
   timeout: number = DEFAULT_TIMEOUT): Promise<Component> {
@@ -87,6 +96,16 @@ export default function abilityTest() {
       await requireText(driver, 'Network List Demo');
     });
 
+    it('findsLocalizedTextFromResourceKeys', 0, async () => {
+      const driver: Driver = Driver.create();
+      await launchMain(driver);
+
+      const coreText: string = getStringResource('core');
+      const networkDemoText: string = getStringResource('main_core_network_demo_title');
+      await requireText(driver, coreText);
+      await requireText(driver, networkDemoText);
+    });
+
     it('switchesAcrossMainTabs', 0, async () => {
       const driver: Driver = Driver.create();
       await launchMain(driver);
@@ -117,6 +136,33 @@ export default function abilityTest() {
 
       await driver.pressBack();
       await requireText(driver, MAIN_CARD);
+    });
+
+    it('showsMockedNetworkData', 0, async () => {
+      const mocker: MockKit = new MockKit();
+      const repository: GoodsRepository = new GoodsRepository();
+      const getGoodsInfo: Function = mocker.mockFunc(repository, repository.getGoodsInfo);
+      const goods: Goods = new Goods();
+      goods.id = 1;
+      goods.title = MOCK_GOODS_TITLE;
+      goods.subTitle = MOCK_GOODS_SUB_TITLE;
+      const response: NetworkResponse<Goods> = new NetworkResponse<Goods>();
+      response.data = goods;
+      when(getGoodsInfo)('1').afterReturn(Promise.resolve(response));
+      GoodsRepositoryProvider.set(repository);
+
+      try {
+        const driver: Driver = Driver.create();
+        await launchMain(driver);
+        await clickText(driver, MAIN_CARD);
+
+        await requireText(driver, NETWORK_PAGE_TITLE);
+        await requireText(driver, MOCK_GOODS_TITLE, START_TIMEOUT);
+        await requireText(driver, MOCK_GOODS_SUB_TITLE);
+      } finally {
+        GoodsRepositoryProvider.reset();
+        mocker.clear(repository);
+      }
     });
 
     it('passesTypedNavigationArguments', 0, async () => {

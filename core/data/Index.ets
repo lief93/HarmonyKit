@@ -7,6 +7,8 @@ export { AuthRepository } from "./src/main/ets/repository/AuthRepository";
 
 export { GoodsRepository } from "./src/main/ets/repository/GoodsRepository";
 
+export { GoodsRepositoryProvider } from "./src/main/ets/repository/GoodsRepositoryProvider";
+
 export { UserInfoRepository } from "./src/main/ets/repository/UserInfoRepository";
 
 export { TokenStoreRepository } from "./src/main/ets/repository/TokenStoreRepository";

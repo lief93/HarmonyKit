@@ -1,5 +1,5 @@
 import { BaseNetWorkViewModel } from "base";
-import { GoodsRepository } from "data";
+import { GoodsRepository, GoodsRepositoryProvider } from "data";
 import { Goods, NetworkResponse } from "model";
 
 /**
@@ -11,7 +11,7 @@ export default class NetworkDemoViewModel extends BaseNetWorkViewModel<Goods> {
   /**
    * 商品仓库
    */
-  private repository: GoodsRepository = new GoodsRepository();
+  private repository: GoodsRepository = GoodsRepositoryProvider.get();
 
   /**
    * 请求商品详情数据
