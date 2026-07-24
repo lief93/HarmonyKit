@@ -1,4 +1,4 @@
-import { Want } from '@kit.AbilityKit';
+import { UIAbility, Want } from '@kit.AbilityKit';
 import { abilityDelegatorRegistry, Component, Driver, ON, On } from '@kit.TestKit';
 import { describe, expect, it, MockKit, when } from '@ohos/hypium';
 import { GoodsRepository, GoodsRepositoryProvider } from 'data';
@@ -14,11 +14,15 @@ const MOCK_GOODS_SUB_TITLE: string = 'Mock 商品副标题';
 const LOADING_TEXT: string = '加载中...';
 const DEFAULT_TIMEOUT: number = 3000;
 const START_TIMEOUT: number = 8000;
+const RESTART_SETTLE_DELAY: number = 300;
+const ENTRY_MODULE_NAME: string = 'entry';
+const ENTRY_ABILITY_NAME: string = 'EntryAbility';
 const MAIN_WANT: Want = {
   bundleName: 'com.joker.kit',
-  moduleName: 'entry',
-  abilityName: 'EntryAbility'
+  moduleName: ENTRY_MODULE_NAME,
+  abilityName: ENTRY_ABILITY_NAME
 };
+let hostAbility: UIAbility | undefined;
 
 class Deferred<T> {
   readonly promise: Promise<T>;
@@ -107,17 +111,60 @@ async function clickTextInScroll(driver: Driver, text: string): Promise<void> {
 
 async function launchHost(driver: Driver): Promise<void> {
   const delegator = abilityDelegatorRegistry.getAbilityDelegator();
-  await delegator.startAbility(MAIN_WANT);
+  const previousAbility: UIAbility | undefined = hostAbility;
+  const previousNavPathStack: NavPathStack | undefined = getNavPathStack();
+  let createdAbility: UIAbility | undefined;
+  let destroyedAbility: UIAbility | undefined;
+  const monitor: abilityDelegatorRegistry.AbilityMonitor = {
+    abilityName: ENTRY_ABILITY_NAME,
+    moduleName: ENTRY_MODULE_NAME,
+    onAbilityCreate: (ability: UIAbility): void => {
+      createdAbility = ability;
+    },
+    onAbilityDestroy: (ability: UIAbility): void => {
+      destroyedAbility = ability;
+    }
+  };
+  await delegator.addAbilityMonitor(monitor);
 
-  let navPathStack: NavPathStack | undefined = getNavPathStack();
-  for (let attempt: number = 0; navPathStack === undefined && attempt < 10; attempt++) {
-    await driver.delayMs(100);
-    navPathStack = getNavPathStack();
+  try {
+    if (previousAbility !== undefined) {
+      await driver.delayMs(RESTART_SETTLE_DELAY);
+      await previousAbility.context.terminateSelf();
+      for (let attempt: number = 0; destroyedAbility !== previousAbility && attempt < 80; attempt++) {
+        await driver.delayMs(100);
+      }
+      if (destroyedAbility !== previousAbility) {
+        throw new Error('previous EntryAbility was not destroyed');
+      }
+    }
+
+    await delegator.startAbility(MAIN_WANT);
+    for (let attempt: number = 0; createdAbility === undefined && attempt < 80; attempt++) {
+      await driver.delayMs(100);
+    }
+    if (createdAbility === undefined) {
+      throw new Error('new EntryAbility was not created');
+    }
+    if (previousAbility !== undefined && createdAbility === previousAbility) {
+      throw new Error('EntryAbility was reused instead of restarted');
+    }
+    hostAbility = createdAbility;
+
+    let navPathStack: NavPathStack | undefined = getNavPathStack();
+    for (let attempt: number = 0;
+      (navPathStack === undefined || navPathStack === previousNavPathStack) && attempt < 80;
+      attempt++) {
+      await driver.delayMs(100);
+      navPathStack = getNavPathStack();
+    }
+    if (navPathStack === undefined || navPathStack === previousNavPathStack) {
+      throw new Error('new navigation stack was not initialized');
+    }
+    navPathStack.clear(false);
+  } finally {
+    await delegator.removeAbilityMonitor(monitor);
   }
-  if (navPathStack === undefined) {
-    throw new Error('navigation stack was not initialized');
-  }
-  navPathStack.clear(false);
 }
 
 async function launchMain(driver: Driver): Promise<void> {
@@ -144,6 +191,24 @@ export default function abilityTest() {
       await requireText(driver, '扩展');
       await requireText(driver, '关于');
       await requireText(driver, 'Network List Demo');
+    });
+
+    it('restartHostResetsPageState', 0, async () => {
+      const driver: Driver = Driver.create();
+      await launchMain(driver);
+      await clickText(driver, '关于');
+      await requireText(driver, '一个优雅的 HarmonyOS 快速开发框架');
+      const delegator = abilityDelegatorRegistry.getAbilityDelegator();
+      const previousAbility: UIAbility = await delegator.getCurrentTopAbility();
+      const previousNavPathStack: NavPathStack | undefined = getNavPathStack();
+
+      await launchHost(driver);
+
+      const restartedAbility: UIAbility = await delegator.getCurrentTopAbility();
+      const restartedNavPathStack: NavPathStack | undefined = getNavPathStack();
+      expect(restartedAbility === previousAbility).assertFalse();
+      expect(restartedNavPathStack === previousNavPathStack).assertFalse();
+      await requireText(driver, MAIN_CARD, START_TIMEOUT);
     });
 
     it('findsLocalizedTextFromResourceKeys', 0, async () => {
