@@ -169,12 +169,14 @@ HAR 测试 HAP。此时 `aa test` 本身可以启动，但测试中显式启动 
 - Deferred Promise 严格验证 Loading → 成功态切换。
 - 状态页、安全区、屏幕适配和本地存储。
 
-原始本地设备验证摘要：
+修复后的可追溯设备验证：
 
 ```text
 Tests run: 12, Failure: 0, Error: 0, Pass: 12, Ignore: 0
 ```
 
-该摘要本身不是提交验收证据。修复后的可追溯设备证据必须通过上面的
-`EVIDENCE_FILE` 流程重新生成并提交。自动化结果证明测试执行和断言通过，不替代人工
-视觉还原验收。
+证据见
+[`evidence/HAR_MODULE_UITEST_DEVICE_EVIDENCE_2026-07-27.md`](evidence/HAR_MODULE_UITEST_DEVICE_EVIDENCE_2026-07-27.md)。
+它由正常构建模式生成，绑定代码提交
+`63d8ed2fe8293c123cc7dec5e02142c514c613b1`，设备 connect key 只保留 SHA-256。
+自动化结果证明测试执行和断言通过，不替代人工视觉还原验收。
