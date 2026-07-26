@@ -131,6 +131,13 @@ feature/                # 功能模块
 2. 运行 entry 模块即可体验完整示例  
 3. 参考各功能模块示例，快速开始业务开发
 
+### 🧪 HAR 模块 UITest
+
+`feature/main` 提供了业务 HAR 自带 `src/ohosTest`、驱动真实
+`entry/EntryAbility`、Mock/Loading/资源文案和多页面交互的完整示例。
+运行结构、命令与多 HAP 安装边界见
+[《在业务 HAR 中编写并运行 UITest》](docs/HAR_MODULE_UITEST.md)。
+
 ## 🤝 参与贡献
 
 欢迎提交 PR 或 Issue，一起完善 HarmonyOS 快速开发体验。
