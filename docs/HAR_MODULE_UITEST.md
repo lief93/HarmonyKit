@@ -33,41 +33,93 @@ feature/main/
 
 ## 一键运行真实 App 流程
 
-先在 DevEco Studio 中为当前设备配置调试签名。仓库不包含证书、profile、密钥库或密码。
+先确认 HDC 目标：
+
+```bash
+hdc list targets
+```
+
+只有一个目标时脚本会自动选择。存在多个设备或模拟器时，必须把目标的完整 connect key
+通过 `DEVICE_ID` 明确传入；未指定时脚本拒绝执行，避免卸载或安装到其他设备。
+
+物理设备或远程设备需要在 DevEco Studio 中配置调试签名。仓库不包含证书、profile、
+密钥库或密码。明确选择的 loopback 模拟器（例如 `127.0.0.1:5555`）可以安装本轮刚构建
+的 unsigned HAP，证据会明确标记为 `unsigned-emulator`，不能泛化到物理设备。
 
 连接设备或模拟器后执行：
 
 ```bash
-./scripts/run-har-uitest.sh
+DEVICE_ID=127.0.0.1:5555 ./scripts/run-har-uitest.sh
 ```
 
 脚本执行以下门禁：
 
-1. 构建并签名真实 entry HAP。
-2. 对业务 HAR 执行 `genOnDeviceTestHap`，生成并签名测试 HAP。
-3. 卸载同 bundle 的旧安装。
-4. 使用 `bm install -p` 一次性安装 entry HAP 与 HAR 测试 HAP。
-5. 使用 `aa test` 运行 HAR 内的 Hypium 测试。
-6. 解析 `OHOS_REPORT_RESULT` 和 `OHOS_REPORT_CODE`；存在 Failure/Error 或没有测试结果时返回非零状态。
+1. 解析 `hdc list targets`，选出唯一 connect key。
+2. 只删除脚本计算出的仓库内默认 signed/unsigned HAP，随后重新构建 entry HAP。
+3. 对业务 HAR 执行 `genOnDeviceTestHap`，重新生成测试 HAP。
+4. 所有卸载、传输、安装、`aa test` 和 trap 清理都使用同一
+   `hdc -t <connectkey>`。
+5. 使用 `bm install -p` 一次性安装 entry HAP 与 HAR 测试 HAP。
+6. 使用 `aa test` 运行 HAR 内的 Hypium 测试。
+7. 拒绝 HDC failure marker，并且只接受唯一、格式精确的最终报告：
+   `Tests run == Pass > 0`，`Failure/Error/Ignore == 0`，同时只能存在一行精确的
+   `OHOS_REPORT_CODE: 0`。
 
 可选环境变量：
 
 ```bash
 HVIGORW=/path/to/hvigorw \
 HDC=/path/to/hdc \
+DEVICE_ID=127.0.0.1:5555 \
 TEST_SCOPE=MainHarUiTest \
 ./scripts/run-har-uitest.sh
 ```
 
-已提前生成签名 HAP 时，可以跳过构建：
+`SKIP_BUILD=1` 只用于本地诊断预生成 HAP，不能作为提交验收、Review 通过或 CI
+证据。该模式会输出明确 warning，并禁止写 `EVIDENCE_FILE`：
 
 ```bash
-SKIP_BUILD=1 ./scripts/run-har-uitest.sh
+SKIP_BUILD=1 \
+DEVICE_ID=127.0.0.1:5555 \
+ENTRY_HAP=/absolute/path/to/entry.hap \
+TEST_HAP=/absolute/path/to/main-test.hap \
+./scripts/run-har-uitest.sh
 ```
 
 其他可覆盖项包括 `PRODUCT`、`BUILD_MODE`、`ENTRY_MODULE`、`ENTRY_TARGET`、
 `HAR_MODULE_NAME`、`HAR_MODULE_DIR`、`BUNDLE_NAME`、`TEST_MODULE_NAME`、
-`TEST_TIMEOUT_MS`、`ENTRY_HAP` 和 `TEST_HAP`。
+`TEST_TIMEOUT_MS`。`ENTRY_HAP` 和 `TEST_HAP` 仅能在 `SKIP_BUILD=1` 使用；
+正常构建模式如果发现这两个覆盖项会在执行构建或删除文件前失败。
+
+## 生成提交验收证据
+
+验收证据必须使用正常构建模式，并从干净、已提交的目标 revision 执行：
+
+```bash
+DEVICE_ID=127.0.0.1:5555 \
+EVIDENCE_FILE=docs/evidence/HAR_MODULE_UITEST_DEVICE_EVIDENCE_2026-07-27.md \
+./scripts/run-har-uitest.sh
+```
+
+证据文件包含：
+
+- 目标 Git commit 和执行前工作区是否干净；
+- 完整的 build/test 参数、bundle 和 module 元数据；
+- connect key 的 SHA-256（不写入原始设备标识）、设备类型、OS 和 API；
+- DevEco Studio 与 Hvigor 版本；
+- entry/test HAP 的路径、字节数和 SHA-256；
+- 唯一最终 `OHOS_REPORT_RESULT`、`OHOS_REPORT_CODE`；
+- HDC `aa test` shell 退出码和脚本退出码。
+
+只有文件中的 `skip_build: 0`、`acceptance_eligible: true` 才能用于验收。证据绑定的
+`target_commit` 是实际构建与设备执行的代码提交；把证据文件加入后续提交不会反向改变
+已执行代码的 commit。
+
+合成负向测试不连接真实设备，可独立验证报告和设备选择门禁：
+
+```bash
+bash scripts/tests/run-har-uitest.test.sh
+```
 
 ## 单独生成 HAR 测试 HAP
 
@@ -99,8 +151,9 @@ HAR 测试 HAP。此时 `aa test` 本身可以启动，但测试中显式启动 
 这不是“HAR 不能写 UITest”，而是“跨真实 App 的 HAR 测试需要多 HAP 安装”。本项目脚本
 保留标准 `genOnDeviceTestHap` 产物，并显式完成 entry HAP + 测试 HAP 的正确安装关系。
 
-还要注意：Hvigor 的任务进程可能在用例失败时仍打印 `BUILD SUCCESSFUL`。判断设备测试是否
-通过，应读取 `OHOS_REPORT_RESULT`，不能只检查构建进程退出码。
+还要注意：Hvigor 的任务进程可能在用例失败时仍打印 `BUILD SUCCESSFUL`。判断设备测试
+是否通过，必须同时检查 HDC shell 退出码、唯一严格
+`OHOS_REPORT_RESULT`、唯一 `OHOS_REPORT_CODE: 0` 和 HDC failure marker。
 
 ## 已覆盖场景
 
@@ -116,10 +169,12 @@ HAR 测试 HAP。此时 `aa test` 本身可以启动，但测试中显式启动 
 - Deferred Promise 严格验证 Loading → 成功态切换。
 - 状态页、安全区、屏幕适配和本地存储。
 
-本地设备验证结果：
+原始本地设备验证摘要：
 
 ```text
 Tests run: 12, Failure: 0, Error: 0, Pass: 12, Ignore: 0
 ```
 
-自动化结果证明测试执行和断言通过，不替代人工视觉还原验收。
+该摘要本身不是提交验收证据。修复后的可追溯设备证据必须通过上面的
+`EVIDENCE_FILE` 流程重新生成并提交。自动化结果证明测试执行和断言通过，不替代人工
+视觉还原验收。

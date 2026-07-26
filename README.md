@@ -135,7 +135,7 @@ feature/                # 功能模块
 
 `feature/main` 提供了业务 HAR 自带 `src/ohosTest`、驱动真实
 `entry/EntryAbility`、Mock/Loading/资源文案和多页面交互的完整示例。
-运行结构、命令与多 HAP 安装边界见
+运行结构、明确 `DEVICE_ID`、严格结果校验、可追溯证据与多 HAP 安装边界见
 [《在业务 HAR 中编写并运行 UITest》](docs/HAR_MODULE_UITEST.md)。
 
 ## 🤝 参与贡献
