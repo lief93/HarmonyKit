@@ -1,8 +1,8 @@
 # HAR module UITest device evidence
 
 schema: harmony-kit.har-uitest-device-evidence.v1
-recorded_at_utc: 2026-07-26T16:44:43Z
-target_commit: 63d8ed2fe8293c123cc7dec5e02142c514c613b1
+recorded_at_utc: 2026-07-26T17:06:16Z
+target_commit: a2fb0d6bde9e12f6646443f91df05d068bba56aa
 target_worktree_clean: true
 runner: scripts/run-har-uitest.sh
 skip_build: 0
@@ -30,10 +30,10 @@ test_build_command: /Applications/DevEco-Studio.app/Contents/tools/hvigor/bin/hv
 test_command: hdc -t <sha256:6460677a198b1872315bae7231fb6131092f3569882742677a6ee620177b668b> shell aa test -b com.joker.kit -m main_test -s unittest /ets/testrunner/OpenHarmonyTestRunner -s timeout 15000 -s coverage false
 entry_hap_path: entry/build/default/outputs/default/entry-default-unsigned.hap
 entry_hap_bytes: 4393234
-entry_hap_sha256: 6d845d14153640af1604282efdccccb380b52e82f8f36f45f5781a9a0eea722e
+entry_hap_sha256: 1f9569c0d76b6fe0770d99c33d1c8a45ce15e451f1fa214115ccd60635352015
 test_hap_path: feature/main/build/default/outputs/ohosTest/main-ohosTest-unsigned.hap
 test_hap_bytes: 4487493
-test_hap_sha256: 5c7eb7fd23208f79233750abfa748e887bf49682b57db8e6468136d4ab9e287b
+test_hap_sha256: 3f203cc3d4afbcaf15210a71aa44d9318ffd0623842378e8d8bdf2890b62059c
 final_result: OHOS_REPORT_RESULT: stream=Tests run: 12, Failure: 0, Error: 0, Pass: 12, Ignore: 0
 final_code: OHOS_REPORT_CODE: 0
 test_shell_exit_status: 0

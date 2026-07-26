@@ -184,6 +184,6 @@ Tests run: 12, Failure: 0, Error: 0, Pass: 12, Ignore: 0
 
 证据见
 [`evidence/HAR_MODULE_UITEST_DEVICE_EVIDENCE_2026-07-27.md`](evidence/HAR_MODULE_UITEST_DEVICE_EVIDENCE_2026-07-27.md)。
-它由正常构建模式生成，绑定代码提交
-`63d8ed2fe8293c123cc7dec5e02142c514c613b1`，设备 connect key 只保留 SHA-256。
+它由正常构建模式生成，具体代码提交记录在文件的 `target_commit` 字段中，设备
+connect key 只保留 SHA-256。
 自动化结果证明测试执行和断言通过，不替代人工视觉还原验收。
