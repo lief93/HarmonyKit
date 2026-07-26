@@ -28,9 +28,12 @@ new_fixture() {
   TEST_FIXTURE_HAP="${FIXTURE}/test-signed.hap"
   FAKE_HDC="${FIXTURE}/hdc"
   FAKE_HVIGOR="${FIXTURE}/hvigorw"
+  FAKE_BIN_DIR="${FIXTURE}/bin"
+  FAKE_GIT="${FAKE_BIN_DIR}/git"
   HDC_LOG="${FIXTURE}/hdc.log"
   HVIGOR_LOG="${FIXTURE}/hvigor.log"
   RUN_OUTPUT_FILE="${FIXTURE}/runner.log"
+  mkdir -p "${FAKE_BIN_DIR}"
   printf 'entry-hap\n' >"${ENTRY_FIXTURE_HAP}"
   printf 'test-hap\n' >"${TEST_FIXTURE_HAP}"
 
@@ -83,7 +86,23 @@ fi
 exit 0
 FAKE_HVIGOR_SCRIPT
 
-  chmod +x "${FAKE_HDC}" "${FAKE_HVIGOR}"
+  cat >"${FAKE_GIT}" <<'FAKE_GIT_SCRIPT'
+#!/usr/bin/env bash
+set -u
+
+if [[ "$*" == *" rev-parse HEAD" ]]; then
+  printf '%s\n' "${FAKE_GIT_COMMIT:-0123456789abcdef0123456789abcdef01234567}"
+  exit 0
+fi
+if [[ "$*" == *" status --porcelain" ]]; then
+  printf '%b' "${FAKE_GIT_STATUS:-}"
+  exit 0
+fi
+printf 'Unexpected fake git command: %s\n' "$*" >&2
+exit 2
+FAKE_GIT_SCRIPT
+
+  chmod +x "${FAKE_HDC}" "${FAKE_HVIGOR}" "${FAKE_GIT}"
   : >"${HDC_LOG}"
   : >"${HVIGOR_LOG}"
 }
@@ -205,6 +224,13 @@ test_hdc_failure_marker_rejected() {
   assert_failure
 }
 
+test_generic_hdc_failure_marker_rejected() {
+  new_fixture hdc-generic-marker
+  run_skip_build $'device-a\n' \
+    $'[Fail]Not match target founded, check connect-key please.\nOHOS_REPORT_RESULT: stream=Tests run: 2, Failure: 0, Error: 0, Pass: 2, Ignore: 0\nOHOS_REPORT_CODE: 0'
+  assert_failure
+}
+
 test_hdc_nonzero_rejected() {
   new_fixture hdc-nonzero
   run_skip_build $'device-a\n' "${PASS_REPORT}" "" 19
@@ -216,6 +242,13 @@ test_zero_devices_rejected() {
   run_skip_build "" "${PASS_REPORT}"
   assert_failure || return 1
   grep -q 'No HDC target is connected' "${RUN_OUTPUT_FILE}" || return 1
+}
+
+test_list_targets_generic_failure_rejected() {
+  new_fixture list-targets-generic-failure
+  run_skip_build $'[Fail]No any connected target\n' "${PASS_REPORT}"
+  assert_failure || return 1
+  grep -q 'HDC reported a failure marker' "${RUN_OUTPUT_FILE}" || return 1
 }
 
 test_multiple_devices_require_device_id() {
@@ -295,6 +328,118 @@ test_build_mode_preserves_custom_haps() {
   [[ ! -s "${HVIGOR_LOG}" ]] || return 1
 }
 
+test_build_mode_rejects_absolute_module_path_outside_project() {
+  new_fixture reject-absolute-module-path
+
+  local suffix="$$-${RANDOM}"
+  local entry_module="haruitestentry${suffix}"
+  local outside_module_dir="${TEST_ROOT}/outside-module-${suffix}"
+  local canary="${outside_module_dir}/build/default/outputs/ohosTest/main-ohosTest-unsigned.hap"
+  mkdir -p \
+    "${PROJECT_ROOT}/${entry_module}" \
+    "$(dirname "${canary}")"
+  printf 'outside-canary\n' >"${canary}"
+  GENERATED_PROJECT_DIRS+=(
+    "${PROJECT_ROOT}/${entry_module}"
+    "${outside_module_dir}"
+  )
+
+  set +e
+  env \
+    HDC="${FAKE_HDC}" \
+    HVIGORW="${FAKE_HVIGOR}" \
+    SKIP_BUILD=0 \
+    DEVICE_ID=127.0.0.1:5555 \
+    ENTRY_MODULE="${entry_module}" \
+    HAR_MODULE_DIR="${outside_module_dir}" \
+    FAKE_HDC_LOG="${HDC_LOG}" \
+    FAKE_HVIGOR_LOG="${HVIGOR_LOG}" \
+    FAKE_TARGETS=$'127.0.0.1:5555\n' \
+    FAKE_REPORT="${PASS_REPORT}" \
+    bash "${RUNNER}" >"${RUN_OUTPUT_FILE}" 2>&1
+  RUN_STATUS=$?
+  set -e
+
+  assert_failure || return 1
+  grep -q '^outside-canary$' "${canary}" || return 1
+  [[ ! -s "${HVIGOR_LOG}" ]] || return 1
+}
+
+test_build_mode_rejects_parent_module_path_outside_project() {
+  new_fixture reject-parent-module-path
+
+  local suffix="$$-${RANDOM}"
+  local entry_module="haruitestentry${suffix}"
+  local outside_name="haruitest-outside-${suffix}"
+  local outside_module_dir="${PROJECT_ROOT}/../${outside_name}"
+  local canary="${outside_module_dir}/build/default/outputs/ohosTest/main-ohosTest-unsigned.hap"
+  mkdir -p \
+    "${PROJECT_ROOT}/${entry_module}" \
+    "$(dirname "${canary}")"
+  printf 'outside-canary\n' >"${canary}"
+  GENERATED_PROJECT_DIRS+=(
+    "${PROJECT_ROOT}/${entry_module}"
+    "${outside_module_dir}"
+  )
+
+  set +e
+  env \
+    HDC="${FAKE_HDC}" \
+    HVIGORW="${FAKE_HVIGOR}" \
+    SKIP_BUILD=0 \
+    DEVICE_ID=127.0.0.1:5555 \
+    ENTRY_MODULE="${entry_module}" \
+    HAR_MODULE_DIR="../${outside_name}" \
+    FAKE_HDC_LOG="${HDC_LOG}" \
+    FAKE_HVIGOR_LOG="${HVIGOR_LOG}" \
+    FAKE_TARGETS=$'127.0.0.1:5555\n' \
+    FAKE_REPORT="${PASS_REPORT}" \
+    bash "${RUNNER}" >"${RUN_OUTPUT_FILE}" 2>&1
+  RUN_STATUS=$?
+  set -e
+
+  assert_failure || return 1
+  grep -q '^outside-canary$' "${canary}" || return 1
+  [[ ! -s "${HVIGOR_LOG}" ]] || return 1
+}
+
+test_build_mode_accepts_repository_module_path_with_spaces() {
+  new_fixture accept-module-path-spaces
+
+  local suffix="$$-${RANDOM}"
+  local entry_module="haruitestentry${suffix}"
+  local har_module_dir="har uitest feature ${suffix}"
+  local entry_output="${PROJECT_ROOT}/${entry_module}/build/default/outputs/default/${entry_module}-default-unsigned.hap"
+  local test_output="${PROJECT_ROOT}/${har_module_dir}/build/default/outputs/ohosTest/main-ohosTest-unsigned.hap"
+  mkdir -p \
+    "${PROJECT_ROOT}/${entry_module}" \
+    "${PROJECT_ROOT}/${har_module_dir}"
+  GENERATED_PROJECT_DIRS+=(
+    "${PROJECT_ROOT}/${entry_module}"
+    "${PROJECT_ROOT}/${har_module_dir}"
+  )
+
+  set +e
+  env \
+    HDC="${FAKE_HDC}" \
+    HVIGORW="${FAKE_HVIGOR}" \
+    SKIP_BUILD=0 \
+    DEVICE_ID=127.0.0.1:5555 \
+    ENTRY_MODULE="${entry_module}" \
+    HAR_MODULE_DIR="${har_module_dir}" \
+    FAKE_ENTRY_OUTPUT="${entry_output}" \
+    FAKE_TEST_OUTPUT="${test_output}" \
+    FAKE_HDC_LOG="${HDC_LOG}" \
+    FAKE_HVIGOR_LOG="${HVIGOR_LOG}" \
+    FAKE_TARGETS=$'127.0.0.1:5555\n' \
+    FAKE_REPORT="${PASS_REPORT}" \
+    bash "${RUNNER}" >"${RUN_OUTPUT_FILE}" 2>&1
+  RUN_STATUS=$?
+  set -e
+
+  assert_success
+}
+
 test_non_skip_evidence_is_traceable_and_redacted() {
   new_fixture evidence
 
@@ -304,6 +449,9 @@ test_non_skip_evidence_is_traceable_and_redacted() {
   local entry_output="${PROJECT_ROOT}/${entry_module}/build/default/outputs/default/${entry_module}-default-unsigned.hap"
   local test_output="${PROJECT_ROOT}/${har_module_dir}/build/default/outputs/ohosTest/main-ohosTest-unsigned.hap"
   local evidence_file="${FIXTURE}/device-evidence.md"
+  mkdir -p \
+    "${PROJECT_ROOT}/${entry_module}" \
+    "${PROJECT_ROOT}/${har_module_dir}"
   GENERATED_PROJECT_DIRS+=(
     "${PROJECT_ROOT}/${entry_module}"
     "${PROJECT_ROOT}/${har_module_dir}"
@@ -311,6 +459,7 @@ test_non_skip_evidence_is_traceable_and_redacted() {
 
   set +e
   env \
+    PATH="${FAKE_BIN_DIR}:${PATH}" \
     HDC="${FAKE_HDC}" \
     HVIGORW="${FAKE_HVIGOR}" \
     SKIP_BUILD=0 \
@@ -326,14 +475,17 @@ test_non_skip_evidence_is_traceable_and_redacted() {
     FAKE_REPORT="${PASS_REPORT}" \
     FAKE_OS_VERSION=OpenHarmony-5.0.5.310 \
     FAKE_API_VERSION=18 \
+    FAKE_GIT_COMMIT=0123456789abcdef0123456789abcdef01234567 \
+    FAKE_GIT_STATUS= \
     bash "${RUNNER}" >"${RUN_OUTPUT_FILE}" 2>&1
   RUN_STATUS=$?
   set -e
 
   assert_success || return 1
   [[ -f "${evidence_file}" ]] || return 1
-  grep -q '^target_commit: [0-9a-f]\{40\}$' "${evidence_file}" || return 1
-  grep -q '^target_worktree_clean: ' "${evidence_file}" || return 1
+  grep -q '^target_commit: 0123456789abcdef0123456789abcdef01234567$' \
+    "${evidence_file}" || return 1
+  grep -q '^target_worktree_clean: true$' "${evidence_file}" || return 1
   grep -q '^device_connect_key_sha256: [0-9a-f]\{64\}$' \
     "${evidence_file}" || return 1
   grep -q '^device_os_version: OpenHarmony-5.0.5.310$' \
@@ -355,6 +507,53 @@ test_non_skip_evidence_is_traceable_and_redacted() {
   grep -q '^test_shell_exit_status: 0$' "${evidence_file}" || return 1
   grep -q '^test_command: hdc -t <sha256:' "${evidence_file}" || return 1
   ! grep -q '127.0.0.1:5555' "${evidence_file}" || return 1
+}
+
+test_dirty_worktree_cannot_create_acceptance_evidence() {
+  new_fixture dirty-evidence
+
+  local suffix="$$-${RANDOM}"
+  local entry_module="haruitestentry${suffix}"
+  local har_module_dir="haruitestfeature${suffix}"
+  local evidence_file="${FIXTURE}/device-evidence.md"
+  local dirty_status
+  mkdir -p \
+    "${PROJECT_ROOT}/${entry_module}" \
+    "${PROJECT_ROOT}/${har_module_dir}"
+  GENERATED_PROJECT_DIRS+=(
+    "${PROJECT_ROOT}/${entry_module}"
+    "${PROJECT_ROOT}/${har_module_dir}"
+  )
+
+  for dirty_status in $' M README.md\n' $'?? local.txt\n'; do
+    : >"${HDC_LOG}"
+    : >"${HVIGOR_LOG}"
+    rm -f "${evidence_file}"
+    set +e
+    env \
+      PATH="${FAKE_BIN_DIR}:${PATH}" \
+      HDC="${FAKE_HDC}" \
+      HVIGORW="${FAKE_HVIGOR}" \
+      SKIP_BUILD=0 \
+      DEVICE_ID=127.0.0.1:5555 \
+      ENTRY_MODULE="${entry_module}" \
+      HAR_MODULE_DIR="${har_module_dir}" \
+      EVIDENCE_FILE="${evidence_file}" \
+      FAKE_HDC_LOG="${HDC_LOG}" \
+      FAKE_HVIGOR_LOG="${HVIGOR_LOG}" \
+      FAKE_TARGETS=$'127.0.0.1:5555\n' \
+      FAKE_REPORT="${PASS_REPORT}" \
+      FAKE_GIT_COMMIT=0123456789abcdef0123456789abcdef01234567 \
+      FAKE_GIT_STATUS="${dirty_status}" \
+      bash "${RUNNER}" >"${RUN_OUTPUT_FILE}" 2>&1
+    RUN_STATUS=$?
+    set -e
+
+    assert_failure || return 1
+    [[ ! -e "${evidence_file}" ]] || return 1
+    [[ ! -s "${HDC_LOG}" ]] || return 1
+    [[ ! -s "${HVIGOR_LOG}" ]] || return 1
+  done
 }
 
 run_test() {
@@ -380,15 +579,21 @@ run_test 'rejects non-zero report code' test_nonzero_code_rejected
 run_test 'rejects duplicate report code' test_duplicate_code_rejected
 run_test 'rejects missing report code' test_missing_code_rejected
 run_test 'rejects HDC failure marker with zero exit' test_hdc_failure_marker_rejected
+run_test 'rejects generic HDC failure marker with zero exit' test_generic_hdc_failure_marker_rejected
 run_test 'rejects non-zero HDC shell status' test_hdc_nonzero_rejected
 run_test 'rejects zero connected devices' test_zero_devices_rejected
+run_test 'rejects generic HDC failure while listing targets' test_list_targets_generic_failure_rejected
 run_test 'requires DEVICE_ID for multiple devices' test_multiple_devices_require_device_id
 run_test 'rejects unknown DEVICE_ID' test_unknown_device_id_rejected
 run_test 'scopes all HDC operations to one device' test_every_device_operation_is_scoped
 run_test 'scopes trap cleanup to the same device' test_trap_cleanup_is_scoped
 run_test 'marks SKIP_BUILD as debug-only' test_skip_build_warns_not_acceptance_evidence
 run_test 'preserves custom HAPs in build mode' test_build_mode_preserves_custom_haps
+run_test 'rejects absolute module cleanup path outside project' test_build_mode_rejects_absolute_module_path_outside_project
+run_test 'rejects parent module cleanup path outside project' test_build_mode_rejects_parent_module_path_outside_project
+run_test 'accepts repository module path with spaces' test_build_mode_accepts_repository_module_path_with_spaces
 run_test 'writes traceable redacted non-skip evidence' test_non_skip_evidence_is_traceable_and_redacted
+run_test 'rejects acceptance evidence from a dirty worktree' test_dirty_worktree_cannot_create_acceptance_evidence
 
 printf '%d passed, %d failed\n' "${PASS_COUNT}" "${FAIL_COUNT}"
 [[ "${FAIL_COUNT}" == "0" ]]

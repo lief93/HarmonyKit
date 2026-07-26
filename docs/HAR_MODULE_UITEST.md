@@ -55,13 +55,14 @@ DEVICE_ID=127.0.0.1:5555 ./scripts/run-har-uitest.sh
 脚本执行以下门禁：
 
 1. 解析 `hdc list targets`，选出唯一 connect key。
-2. 只删除脚本计算出的仓库内默认 signed/unsigned HAP，随后重新构建 entry HAP。
+2. 校验模块输出目录确实位于仓库内，只删除脚本计算出的默认 signed/unsigned HAP，
+   随后重新构建 entry HAP。
 3. 对业务 HAR 执行 `genOnDeviceTestHap`，重新生成测试 HAP。
 4. 所有卸载、传输、安装、`aa test` 和 trap 清理都使用同一
    `hdc -t <connectkey>`。
 5. 使用 `bm install -p` 一次性安装 entry HAP 与 HAR 测试 HAP。
 6. 使用 `aa test` 运行 HAR 内的 Hypium 测试。
-7. 拒绝 HDC failure marker，并且只接受唯一、格式精确的最终报告：
+7. 拒绝任何行首为 `[Fail]` 的 HDC failure marker，并且只接受唯一、格式精确的最终报告：
    `Tests run == Pass > 0`，`Failure/Error/Ignore == 0`，同时只能存在一行精确的
    `OHOS_REPORT_CODE: 0`。
 
@@ -90,6 +91,8 @@ TEST_HAP=/absolute/path/to/main-test.hap \
 `HAR_MODULE_NAME`、`HAR_MODULE_DIR`、`BUNDLE_NAME`、`TEST_MODULE_NAME`、
 `TEST_TIMEOUT_MS`。`ENTRY_HAP` 和 `TEST_HAP` 仅能在 `SKIP_BUILD=1` 使用；
 正常构建模式如果发现这两个覆盖项会在执行构建或删除文件前失败。
+`ENTRY_MODULE` 和 `HAR_MODULE_DIR` 必须指向仓库内已有目录；绝对路径、包含 `..`
+的越界路径和解析到仓库外的符号链接会在清理产物前被拒绝。仓库内带空格的目录仍受支持。
 
 ## 生成提交验收证据
 
@@ -100,6 +103,9 @@ DEVICE_ID=127.0.0.1:5555 \
 EVIDENCE_FILE=docs/evidence/HAR_MODULE_UITEST_DEVICE_EVIDENCE_2026-07-27.md \
 ./scripts/run-har-uitest.sh
 ```
+
+请求 `EVIDENCE_FILE` 时，脚本会在构建和设备操作前检查 tracked 与 untracked 状态；
+工作区不干净会直接失败，不会生成可验收证据。
 
 证据文件包含：
 
@@ -139,7 +145,8 @@ hvigorw genOnDeviceTestHap \
 feature/main/build/default/outputs/ohosTest/main-ohosTest-signed.hap
 ```
 
-没有配置签名时只能得到 `main-ohosTest-unsigned.hap`，它不能直接完成设备测试。
+没有配置签名时只能得到 `main-ohosTest-unsigned.hap`，它不能直接用于物理或远程设备；
+前文明确选择的 loopback 模拟器例外仍然适用。
 
 ## 为什么不直接依赖 HAR 的原生 `onDeviceTest`
 

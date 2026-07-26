@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "${PROJECT_ROOT}"
 
 ENTRY_HAP_WAS_SET=0
@@ -66,6 +66,38 @@ single_line() {
   printf '%s' "$1" |
     tr '\r\n' '  ' |
     sed 's/[[:space:]][[:space:]]*/ /g; s/^ //; s/ $//'
+}
+
+contains_hdc_failure_marker() {
+  grep -Eq '^[[:space:]]*\[Fail\]'
+}
+
+validate_path_component() {
+  local variable_name="$1"
+  local value="$2"
+  if [[ -z "${value}" || "${value}" == "." || "${value}" == ".." ||
+    "${value}" == */* ]]; then
+    fail "${variable_name} must be one non-empty path component."
+  fi
+}
+
+validate_repository_directory() {
+  local variable_name="$1"
+  local value="$2"
+  local physical_path
+
+  if [[ -z "${value}" || "${value}" == /* || "${value}" == ".." ||
+    "${value}" == ../* || "${value}" == */../* || "${value}" == */.. ]]; then
+    fail "${variable_name} must be a repository-relative path without '..' segments."
+  fi
+  if [[ ! -d "${PROJECT_ROOT}/${value}" ]]; then
+    fail "${variable_name} must reference an existing directory in the repository."
+  fi
+  physical_path="$(cd "${PROJECT_ROOT}/${value}" && pwd -P)"
+  if [[ "${physical_path}" != "${PROJECT_ROOT}" &&
+    "${physical_path}" != "${PROJECT_ROOT}/"* ]]; then
+    fail "${variable_name} resolves outside the repository."
+  fi
 }
 
 sha256_file() {
@@ -140,6 +172,14 @@ if [[ "${SKIP_BUILD}" != "0" && "${SKIP_BUILD}" != "1" ]]; then
   fail 'SKIP_BUILD must be 0 or 1.'
 fi
 
+if [[ "${SKIP_BUILD}" == "0" ]]; then
+  validate_path_component PRODUCT "${PRODUCT}"
+  validate_path_component ENTRY_MODULE "${ENTRY_MODULE}"
+  validate_path_component HAR_MODULE_NAME "${HAR_MODULE_NAME}"
+  validate_repository_directory ENTRY_MODULE "${ENTRY_MODULE}"
+  validate_repository_directory HAR_MODULE_DIR "${HAR_MODULE_DIR}"
+fi
+
 DEFAULT_ENTRY_SIGNED_HAP="${ENTRY_MODULE}/build/${PRODUCT}/outputs/${PRODUCT}/${ENTRY_MODULE}-${PRODUCT}-signed.hap"
 DEFAULT_ENTRY_UNSIGNED_HAP="${ENTRY_MODULE}/build/${PRODUCT}/outputs/${PRODUCT}/${ENTRY_MODULE}-${PRODUCT}-unsigned.hap"
 DEFAULT_TEST_SIGNED_HAP="${HAR_MODULE_DIR}/build/${PRODUCT}/outputs/ohosTest/${HAR_MODULE_NAME}-ohosTest-signed.hap"
@@ -158,6 +198,19 @@ else
   if [[ -n "${EVIDENCE_FILE}" ]]; then
     fail 'EVIDENCE_FILE cannot be used with SKIP_BUILD=1.'
   fi
+fi
+
+TARGET_COMMIT=""
+TARGET_WORKTREE_CLEAN=false
+if [[ -n "${EVIDENCE_FILE}" ]]; then
+  TARGET_COMMIT="$(git -C "${PROJECT_ROOT}" rev-parse HEAD)" ||
+    fail 'Cannot resolve the Git revision for acceptance evidence.'
+  WORKTREE_STATUS="$(git -C "${PROJECT_ROOT}" status --porcelain)" ||
+    fail 'Cannot inspect the Git worktree for acceptance evidence.'
+  if [[ -n "${WORKTREE_STATUS}" ]]; then
+    fail 'EVIDENCE_FILE requires a clean Git worktree before build and device execution.'
+  fi
+  TARGET_WORKTREE_CLEAN=true
 fi
 
 REMOTE_DIR="/data/local/tmp/har_uitest_$$"
@@ -198,7 +251,7 @@ select_device() {
     fail "Cannot list HDC targets; hdc exited with status ${list_status}."
   fi
   if printf '%s\n' "${targets_output}" |
-    grep -Eq '\[Fail\]\[E[0-9]{6}\]'; then
+    contains_hdc_failure_marker; then
     printf '%s\n' "${targets_output}" >&2
     fail 'Cannot list HDC targets because HDC reported a failure marker.'
   fi
@@ -255,7 +308,7 @@ run_hdc() {
     return "${status}"
   fi
   if printf '%s\n' "${output}" |
-    grep -Eq '\[Fail\]\[E[0-9]{6}\]'; then
+    contains_hdc_failure_marker; then
     return 1
   fi
 }
@@ -351,7 +404,7 @@ if [[ "${TEST_COMMAND_STATUS}" != "0" ]]; then
   exit "${TEST_COMMAND_STATUS}"
 fi
 
-if grep -Eq '\[Fail\]\[E[0-9]{6}\]' "${NORMALIZED_RESULT_FILE}"; then
+if contains_hdc_failure_marker <"${NORMALIZED_RESULT_FILE}"; then
   printf 'HAR UITest output contains an HDC failure marker.\n' >&2
   exit 1
 fi
@@ -409,15 +462,12 @@ query_device_property() {
   set -e
   if [[ "${status}" == "0" ]] &&
     ! printf '%s\n' "${value}" |
-      grep -Eq '\[Fail\]\[E[0-9]{6}\]'; then
+      contains_hdc_failure_marker; then
     single_line "${value}"
   fi
 }
 
 write_evidence() {
-  local target_commit
-  local target_worktree_clean=false
-  local worktree_status
   local deveco_version
   local hvigor_version
   local device_os_version
@@ -428,11 +478,6 @@ write_evidence() {
   local test_command
   local timestamp
 
-  target_commit="$(git -C "${PROJECT_ROOT}" rev-parse HEAD)"
-  worktree_status="$(git -C "${PROJECT_ROOT}" status --porcelain)"
-  if [[ -z "${worktree_status}" ]]; then
-    target_worktree_clean=true
-  fi
   deveco_version="$(single_line "$(detect_deveco_version)")"
   hvigor_version="$(single_line "$("${HVIGORW_BIN}" --version 2>&1)")"
   device_os_version="$(query_device_property const.ohos.fullname)"
@@ -464,8 +509,8 @@ write_evidence() {
     printf '# HAR module UITest device evidence\n\n'
     printf 'schema: harmony-kit.har-uitest-device-evidence.v1\n'
     printf 'recorded_at_utc: %s\n' "${timestamp}"
-    printf 'target_commit: %s\n' "${target_commit}"
-    printf 'target_worktree_clean: %s\n' "${target_worktree_clean}"
+    printf 'target_commit: %s\n' "${TARGET_COMMIT}"
+    printf 'target_worktree_clean: %s\n' "${TARGET_WORKTREE_CLEAN}"
     printf 'runner: scripts/run-har-uitest.sh\n'
     printf 'skip_build: 0\n'
     printf 'acceptance_eligible: true\n'
