@@ -24,12 +24,101 @@ feature/main/
     └── ohosTest/
         ├── module.json5              # type: feature 的测试 HAP
         └── ets/test/
-            ├── List.test.ets
-            └── Ability.test.ets      # Hypium + TestKit Driver
+            ├── framework/            # 可复用的 Driver/异步测试基础能力
+            ├── support/              # 项目适配、fixture 与宿主生命周期
+            ├── robots/               # 页面操作和页面断言
+            ├── specs/                # Hypium 业务测试语义
+            ├── Ability.test.ets      # 只组合 MainHarUiTest 测试套
+            └── List.test.ets          # 测试入口
 ```
 
 `feature/main/build-profile.json5` 声明了 `ohosTest` target。测试 HAP 的
 `module.json5` 使用 `type: "feature"`；生产模块仍然是 HAR，没有改成 HAP。
+
+这套目录是可运行的参考结构，不代表已经发布了一套测试 SDK：
+
+- `framework` 只放与 HarmonyKit 业务无关、未来可能提取成 SDK 的通用能力，例如
+  Driver 查找/点击/滚动封装和 Deferred。
+- `support` 负责 bundle、EntryAbility、导航栈隔离、资源文案、业务模型和 fixture，迁移到
+  其他项目时需要替换。
+- `robots` 把 Driver 细节组织成页面级操作与断言，不注册 Hypium 用例。
+- `specs` 表达业务流程、Mock 生命周期和测试数据，并保留稳定的用例名称。
+- `Ability.test.ets` 只负责在唯一的 `MainHarUiTest` suite 中注册各组 specs，因此
+  `MainHarUiTest#testName` 的命令行与 IDE 选择器保持不变。
+
+## 日常运行：只输入一个测试选择器
+
+仓库根目录的 `uitest` 是日常单用例入口。它只接受一个参数，自动完成构建、唯一设备
+选择、entry + HAR 测试 HAP 安装和严格报告校验，并把测试超时固定为 60 秒：
+
+```bash
+./uitest 'MainHarUiTest#opensNetworkPageAndReturns'
+```
+
+也可以只指定整个测试套：
+
+```bash
+./uitest MainHarUiTest
+```
+
+零参数、多个参数或不符合 `ClassName[#testName]` 的选择器会直接失败。只有一个 HDC
+目标时会自动选择；多目标环境仍会拒绝执行，避免误操作其他设备。
+
+当前一参数入口只承诺并实测 **macOS + Bash**。`uitest` 使用
+`#!/usr/bin/env bash`，不支持直接从 Windows CMD、PowerShell 或未提供兼容 Bash 与
+HarmonyOS 工具链的环境运行；Windows/Linux 适配不在本交付范围内。
+
+Node 补齐行为严格如下：
+
+- 已存在 `NODE_HOME` 时，`uitest` 保留原值。
+- `NODE_HOME` 为空时，候选目录是
+  `${DEVECO_STUDIO_HOME:-/Applications/DevEco-Studio.app/Contents}/tools/node`。
+- 只有候选目录中的 `bin/node` 可执行时，`uitest` 才导出该 `NODE_HOME`。
+- 候选 Node 不存在时，入口不会声称已补齐环境，而是把原环境交给底层 runner；Hvigor
+  仍可能报 `NODE_HOME is not set and not 'node' command found in your path`。
+
+因此默认零配置路径仅适用于 DevEco Studio 安装在
+`/Applications/DevEco-Studio.app/Contents` 的 macOS 环境。
+
+如果希望完全在 DevEco Studio 中操作，在
+`Settings > Tools > External Tools` 新增 `UITest (60s)`：
+
+```text
+Program:           $ProjectFileDir$/uitest
+Arguments:         $Prompt$
+Working directory: $ProjectFileDir$
+```
+
+运行 `UITest (60s)` 后，DevEco 只弹出一个 `Enter parameters` 输入框；输入
+`MainHarUiTest#testName` 即可。该 External Tool 与命令行共用同一个 `uitest`，没有
+第二套构建或设备脚本。
+
+External Tool 是 DevEco 的**本机用户级配置**，不属于仓库文件。DevEco Studio 6.1
+实测配置保存在
+`~/Library/Application Support/Huawei/DevEcoStudio6.1/tools/External Tools.xml`。
+换机、重装 DevEco Studio、切换或重置 IDE profile 后，必须重新创建上述配置；仅复制
+或拉取本仓库不会自动得到该菜单项。
+
+DevEco 不在默认安装路径时，把 External Tool 改为以下固定配置，运行时仍只输入一个
+`ClassName[#testName]`：
+
+```text
+Program:           /usr/bin/env
+Arguments:         DEVECO_STUDIO_HOME="/absolute/path/to/DevEco-Studio.app/Contents" "$ProjectFileDir$/uitest" $Prompt$
+Working directory: $ProjectFileDir$
+```
+
+`DEVECO_STUDIO_HOME` 应指向同时包含 `tools/node`、`tools/hvigor` 和 SDK 的 DevEco
+`Contents` 目录。如果 Hvigor 与 HDC 已能从原环境定位，只需指定其他 Node，也可以使用：
+
+```text
+Program:           /usr/bin/env
+Arguments:         NODE_HOME="/absolute/path/to/node-home" "$ProjectFileDir$/uitest" $Prompt$
+Working directory: $ProjectFileDir$
+```
+
+这里的 `NODE_HOME` 必须包含可执行的 `bin/node`。这些环境值是 External Tool 的固定
+配置，不是每次运行需要输入的参数；每次弹窗仍只填写测试选择器。
 
 ## 一键运行真实 App 流程
 
@@ -164,7 +253,7 @@ HAR 测试 HAP。此时 `aa test` 本身可以启动，但测试中显式启动 
 
 ## 已覆盖场景
 
-`Ability.test.ets` 当前覆盖：
+分层后的 `specs` 当前覆盖：
 
 - 显式启动真实 `EntryAbility`，进入 HAR 提供的业务主页面。
 - 每个用例之间终止并重新创建 Ability，验证页面与导航栈隔离。

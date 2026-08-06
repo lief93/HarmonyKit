@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SELECTOR_PATTERN='^[[:alpha:]_$][[:alnum:]_.$]*(#[[:alpha:]_$][[:alnum:]_$]*)?$'
+if [[ "$#" != "1" || ! "$1" =~ ${SELECTOR_PATTERN} ]]; then
+  printf 'Usage: ./uitest ClassName[#testName]\n' >&2
+  exit 2
+fi
+
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+DEVECO_NODE_HOME="${DEVECO_STUDIO_HOME:-/Applications/DevEco-Studio.app/Contents}/tools/node"
+if [[ -z "${NODE_HOME:-}" && -x "${DEVECO_NODE_HOME}/bin/node" ]]; then
+  export NODE_HOME="${DEVECO_NODE_HOME}"
+fi
+TEST_SCOPE="$1" TEST_TIMEOUT_MS=60000 \
+  exec "${PROJECT_ROOT}/scripts/run-har-uitest.sh"
