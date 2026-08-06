@@ -46,6 +46,35 @@ feature/main/
 - `Ability.test.ets` 只负责在唯一的 `MainHarUiTest` suite 中注册各组 specs，因此
   `MainHarUiTest#testName` 的命令行与 IDE 选择器保持不变。
 
+## 不经过生产路由，直接挂载业务组件
+
+鸿蒙 UITest 不只能够从 EntryAbility 沿生产路由进入页面。本项目还提供了一个接近
+Compose UI Test `setContent` 的设备测试示例：
+
+```bash
+./uitest 'MainHarUiTest#mountsBusinessComponentIntoTestWindowWithoutRoute'
+```
+
+该用例取得 HAR 测试 HAP 自动生成的 `TestAbility` 及其窗口，通过
+`ComponentContent` 和 `OverlayManager.addComponentContent`，把真实生产组件
+`BaseNetWorkView` 直接挂到测试窗口。测试控制一个仅存在于 `ohosTest` 的宿主状态，使用
+Driver 验证 Loading、点击切换到 Success，以及卸载后的窗口恢复。它不启动生产
+`EntryAbility`，不调用业务 Navigator，也不创建生产 `NavPathStack` 记录。
+
+相关文件职责：
+
+- `framework/ComponentMount.ets`：把任意无参数 `WrappedBuilder` 挂到当前测试窗口，并返回
+  可卸载的句柄。
+- `specs/DirectMount.spec.ets`：定义测试专用宿主、挂载真实业务组件并执行 Driver 断言。
+- 每次挂载都必须在 `finally` 中调用 `unmount()`；它会先从 Overlay 移除内容，再
+  `dispose()`，避免污染后续用例。
+
+这个方式适合测试可独立渲染的页面内容、控件组合和注入后的 UI 状态。若一个生产页面的
+根节点本身是 `NavDestination`，依赖生产 Navigation Provider、路由参数、返回栈或
+EntryAbility 生命周期，就不能把这些依赖当作不存在；应直接挂载拆出的可复用页面内容，
+或由测试宿主补齐所需上下文。生产路由、路由参数和 Ability 生命周期仍应保留真实 App
+流程测试。
+
 ## 日常运行：只输入一个测试选择器
 
 仓库根目录的 `uitest` 是日常单用例入口。它只接受一个参数，自动完成构建、唯一设备
@@ -263,9 +292,13 @@ HAR 测试 HAP。此时 `aa test` 本身可以启动，但测试中显式启动 
 - 带参导航和结果回传。
 - Mock repository 返回值。
 - Deferred Promise 严格验证 Loading → 成功态切换。
+- Mock 传输失败、业务失败 → 重试成功、列表空态和列表成功态。
+- MockKit 精确/类型/正则参数、动态动作、同步/异步失败、调用次数和方法恢复。
+- 通过 ComponentContent 把真实业务组件直接挂到 TestAbility 窗口，验证 Loading →
+  Success 和卸载清理，全程不经过生产路由。
 - 状态页、安全区、屏幕适配和本地存储。
 
-修复后的可追溯设备验证：
+原 HAR module-local 结构提交的可追溯设备验证：
 
 ```text
 Tests run: 12, Failure: 0, Error: 0, Pass: 12, Ignore: 0
@@ -276,3 +309,8 @@ Tests run: 12, Failure: 0, Error: 0, Pass: 12, Ignore: 0
 它由正常构建模式生成，具体代码提交记录在文件的 `target_commit` 字段中，设备
 connect key 只保留 SHA-256。
 自动化结果证明测试执行和断言通过，不替代人工视觉还原验收。
+
+在上述结构上扩展 Mock 示例后，当前工作树的完整设备回归为 25/25；Mock 场景索引与本次
+验证结果、能力边界和逐场景代码索引记录在
+[`UITEST_MOCK_GUIDE.md`](UITEST_MOCK_GUIDE.md)。历史证据文件仍只证明其 `target_commit`
+对应的 12 个用例，不将它冒充为当前工作树证据。

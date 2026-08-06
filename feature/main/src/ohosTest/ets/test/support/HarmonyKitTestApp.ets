@@ -2,7 +2,7 @@ import { UIAbility, Want } from '@kit.AbilityKit';
 import { abilityDelegatorRegistry, Driver } from '@kit.TestKit';
 import { DemoNavigator, getNavPathStack } from 'navigation';
 import { clickText, requireText } from '../framework/UiDriver';
-import { MAIN_CARD, NETWORK_PAGE_TITLE, START_TIMEOUT } from './TestValues';
+import { MAIN_CARD, NETWORK_LIST_PAGE_TITLE, NETWORK_PAGE_TITLE, START_TIMEOUT } from './TestValues';
 
 const RESTART_SETTLE_DELAY: number = 300;
 const ENTRY_MODULE_NAME: string = 'entry';
@@ -87,4 +87,10 @@ export async function openNetworkDemoPage(driver: Driver): Promise<void> {
   await launchHost(driver);
   DemoNavigator.toNetworkDemo();
   await requireText(driver, NETWORK_PAGE_TITLE, START_TIMEOUT);
+}
+
+export async function openNetworkListDemoPage(driver: Driver): Promise<void> {
+  await launchHost(driver);
+  DemoNavigator.toNetworkListDemo();
+  await requireText(driver, NETWORK_LIST_PAGE_TITLE, START_TIMEOUT);
 }

@@ -63,13 +63,13 @@ export struct Empty {
         plain: true,
         hairline: true,
         round: true,
-        btnWidth: P70
-      })
-        .onClick(() => {
+        btnWidth: P70,
+        onBtnClick: (): void => {
           if (this.onAction) {
             this.onAction();
           }
-        });
+        }
+      });
     }
   }
 

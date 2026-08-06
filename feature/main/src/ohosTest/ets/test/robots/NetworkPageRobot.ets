@@ -7,6 +7,8 @@ import {
   MOCK_GOODS_SUB_TITLE,
   MOCK_GOODS_TITLE,
   NETWORK_PAGE_TITLE,
+  NETWORK_ERROR_TEXT,
+  RETRY_TEXT,
   START_TIMEOUT
 } from '../support/TestValues';
 
@@ -46,6 +48,15 @@ export class NetworkPageRobot {
 
   async expectLoadingAbsent(): Promise<void> {
     await requireTextAbsent(this.driver, LOADING_TEXT);
+  }
+
+  async expectError(): Promise<void> {
+    await requireText(this.driver, NETWORK_ERROR_TEXT, START_TIMEOUT);
+    await requireText(this.driver, RETRY_TEXT);
+  }
+
+  async retry(): Promise<void> {
+    await clickText(this.driver, RETRY_TEXT);
   }
 
   async waitForStateChange(): Promise<void> {
