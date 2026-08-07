@@ -75,7 +75,7 @@ EntryAbility 生命周期，就不能把这些依赖当作不存在；应直接�
 或由测试宿主补齐所需上下文。生产路由、路由参数和 Ability 生命周期仍应保留真实 App
 流程测试。
 
-## 日常运行：只输入一个测试选择器
+## 日常运行：光标感知或单个选择器
 
 仓库根目录的 `uitest` 是日常单用例入口。它只接受一个参数，自动完成构建、唯一设备
 选择、entry + HAR 测试 HAP 安装和严格报告校验，并把测试超时固定为 60 秒：
@@ -109,8 +109,41 @@ Node 补齐行为严格如下：
 因此默认零配置路径仅适用于 DevEco Studio 安装在
 `/Applications/DevEco-Studio.app/Contents` 的 macOS 环境。
 
-如果希望完全在 DevEco Studio 中操作，在
-`Settings > Tools > External Tools` 新增 `UITest (60s)`：
+### DevEco 光标感知运行：不输入测试名称
+
+第一阶段复用 DevEco 已经显示绿色运行标记的 Hypium 结构：`describe()` 视为测试类，
+`it()` 视为测试方法。在 `Settings > Tools > External Tools` 新增
+`Run UITest at Cursor (60s)`：
+
+```text
+Program:           $ProjectFileDir$/uitest-current
+Arguments:         "$FilePath$" "$LineNumber$"
+Working directory: $ProjectFileDir$
+```
+
+再到 `Settings > Keymap > External Tools > Run UITest at Cursor (60s)` 绑定团队约定的
+快捷键。使用时不弹输入框：
+
+- 光标位于一个 `it()` 调用的声明行或方法体内，运行
+  `MainHarUiTest#当前方法名`。
+- 光标位于一个 `describe()` 类体内、但不位于嵌套的 `it()` 中，运行该测试类。
+- 光标不在上述范围，立即报错，不猜测也不误跑整个套件。
+
+`uitest-current` 会忽略注释、普通字符串和模板字符串中的伪 `it`/`describe`，支持多行
+测试方法。当前 HAR 的 specs 分文件注册到唯一的 `MainHarUiTest`，因此独立 spec 文件内
+的 `it()` 默认映射到该类；其他测试类可通过固定环境变量 `UITEST_CLASS` 覆盖。
+
+这个入口感知的是与绿色运行标记相同的类和方法，但触发动作是自定义快捷键或
+`Tools > External Tools` 菜单；第一阶段不会接管原生绿色按钮，点击原生按钮仍可能受到
+DevEco 的 15 秒限制。
+
+`uitest-current` 需要 Node 来解析当前 ArkTS 文件，查找顺序依次是
+`${NODE_HOME}/bin/node`、`${DEVECO_STUDIO_HOME:-默认 DevEco Contents}/tools/node/bin/node`
+和 `PATH` 中的 `node`；全部不存在时会在构建和设备操作前失败。
+
+### 手动选择器备用入口
+
+如果希望手动输入任意选择器，可另建 `UITest by Selector (60s)`：
 
 ```text
 Program:           $ProjectFileDir$/uitest
@@ -118,7 +151,7 @@ Arguments:         $Prompt$
 Working directory: $ProjectFileDir$
 ```
 
-运行 `UITest (60s)` 后，DevEco 只弹出一个 `Enter parameters` 输入框；输入
+运行 `UITest by Selector (60s)` 后，DevEco 会弹出一个 `Enter parameters` 输入框；输入
 `MainHarUiTest#testName` 即可。该 External Tool 与命令行共用同一个 `uitest`，没有
 第二套构建或设备脚本。
 
@@ -128,12 +161,11 @@ External Tool 是 DevEco 的**本机用户级配置**，不属于仓库文件。
 换机、重装 DevEco Studio、切换或重置 IDE profile 后，必须重新创建上述配置；仅复制
 或拉取本仓库不会自动得到该菜单项。
 
-DevEco 不在默认安装路径时，把 External Tool 改为以下固定配置，运行时仍只输入一个
-`ClassName[#testName]`：
+DevEco 不在默认安装路径时，光标感知 External Tool 使用以下固定配置：
 
 ```text
 Program:           /usr/bin/env
-Arguments:         DEVECO_STUDIO_HOME="/absolute/path/to/DevEco-Studio.app/Contents" "$ProjectFileDir$/uitest" $Prompt$
+Arguments:         DEVECO_STUDIO_HOME="/absolute/path/to/DevEco-Studio.app/Contents" "$ProjectFileDir$/uitest-current" "$FilePath$" "$LineNumber$"
 Working directory: $ProjectFileDir$
 ```
 
@@ -142,12 +174,13 @@ Working directory: $ProjectFileDir$
 
 ```text
 Program:           /usr/bin/env
-Arguments:         NODE_HOME="/absolute/path/to/node-home" "$ProjectFileDir$/uitest" $Prompt$
+Arguments:         NODE_HOME="/absolute/path/to/node-home" "$ProjectFileDir$/uitest-current" "$FilePath$" "$LineNumber$"
 Working directory: $ProjectFileDir$
 ```
 
 这里的 `NODE_HOME` 必须包含可执行的 `bin/node`。这些环境值是 External Tool 的固定
-配置，不是每次运行需要输入的参数；每次弹窗仍只填写测试选择器。
+配置，不是每次运行需要输入的参数。手动选择器入口如需适配非默认路径，只需把上述命令
+中的 `uitest-current`、文件和行号参数替换为 `uitest $Prompt$`。
 
 ## 一键运行真实 App 流程
 
@@ -242,6 +275,8 @@ EVIDENCE_FILE=docs/evidence/HAR_MODULE_UITEST_DEVICE_EVIDENCE_2026-07-27.md \
 合成负向测试不连接真实设备，可独立验证报告和设备选择门禁：
 
 ```bash
+bash scripts/tests/uitest.test.sh
+node --test scripts/tests/resolve-uitest-selector.test.mjs
 bash scripts/tests/run-har-uitest.test.sh
 ```
 

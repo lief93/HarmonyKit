@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ "$#" != "2" ]]; then
+  printf 'Usage: ./uitest-current <ArkTS-file> <line-number>\n' >&2
+  exit 2
+fi
+
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+DEVECO_NODE_HOME="${DEVECO_STUDIO_HOME:-/Applications/DevEco-Studio.app/Contents}/tools/node"
+
+if [[ -n "${NODE_HOME:-}" && -x "${NODE_HOME}/bin/node" ]]; then
+  NODE_BIN="${NODE_HOME}/bin/node"
+elif [[ -x "${DEVECO_NODE_HOME}/bin/node" ]]; then
+  export NODE_HOME="${DEVECO_NODE_HOME}"
+  NODE_BIN="${NODE_HOME}/bin/node"
+elif command -v node >/dev/null 2>&1; then
+  NODE_BIN="$(command -v node)"
+else
+  printf 'uitest-current: Node was not found; set NODE_HOME or DEVECO_STUDIO_HOME.\n' >&2
+  exit 2
+fi
+
+SELECTOR="$("${NODE_BIN}" \
+  "${PROJECT_ROOT}/scripts/resolve-uitest-selector.mjs" \
+  "$1" "$2" "${UITEST_CLASS:-MainHarUiTest}")"
+
+exec "${PROJECT_ROOT}/uitest" "${SELECTOR}"
