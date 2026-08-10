@@ -2,6 +2,36 @@ import { Component, Driver, ON, On } from '@kit.TestKit';
 import { expect } from '@ohos/hypium';
 
 const DEFAULT_TIMEOUT: number = 3000;
+const DEFAULT_ABSENCE_TIMEOUT: number = 500;
+const DEFAULT_POLL_INTERVAL: number = 100;
+const ABILITY_RESTART_SETTLE_DELAY: number = 300;
+
+// The loopback emulator can kill the test process when an ability is terminated
+// immediately after the previous UI interaction, even after waitForIdle succeeds.
+export async function waitForAbilityRestartSafePoint(driver: Driver): Promise<void> {
+  await driver.delayMs(ABILITY_RESTART_SETTLE_DELAY);
+}
+
+export async function waitForUiIdle(driver: Driver, idleTime: number = 100,
+  timeout: number = DEFAULT_TIMEOUT): Promise<void> {
+  const idle: boolean = await driver.waitForIdle(idleTime, timeout);
+  if (!idle) {
+    throw new Error(`UI did not stay idle for ${idleTime}ms within ${timeout}ms`);
+  }
+  expect(idle).assertTrue();
+}
+
+export async function waitForCondition(driver: Driver, condition: () => boolean,
+  description: string, timeout: number = DEFAULT_TIMEOUT): Promise<void> {
+  const deadline: number = Date.now() + timeout;
+  while (!condition()) {
+    const remaining: number = deadline - Date.now();
+    if (remaining <= 0) {
+      throw new Error(`${description} was not satisfied within ${timeout}ms`);
+    }
+    await driver.delayMs(Math.min(DEFAULT_POLL_INTERVAL, remaining));
+  }
+}
 
 export async function requireComponent(driver: Driver, on: On, description: string,
   timeout: number = DEFAULT_TIMEOUT): Promise<Component> {
@@ -19,13 +49,23 @@ export async function requireText(driver: Driver, text: string,
   return requireComponent(driver, ON.text(text), `text '${text}'`, timeout);
 }
 
-export async function requireTextAbsent(driver: Driver, text: string, timeout: number = 500): Promise<void> {
-  const component: Component = await driver.waitForComponent(ON.text(text), timeout);
-  const absent: boolean = component === null || component === undefined;
-  if (!absent) {
-    throw new Error(`text '${text}' is still visible`);
+export async function requireTextAbsent(driver: Driver, text: string,
+  timeout: number = DEFAULT_ABSENCE_TIMEOUT): Promise<void> {
+  const deadline: number = Date.now() + timeout;
+  while (true) {
+    const component: Component = await driver.findComponent(ON.text(text));
+    const absent: boolean = component === null || component === undefined;
+    if (absent) {
+      expect(absent).assertTrue();
+      return;
+    }
+
+    const remaining: number = deadline - Date.now();
+    if (remaining <= 0) {
+      throw new Error(`text '${text}' is still visible after ${timeout}ms`);
+    }
+    await driver.delayMs(Math.min(DEFAULT_POLL_INTERVAL, remaining));
   }
-  expect(absent).assertTrue();
 }
 
 export async function clickText(driver: Driver, text: string,
@@ -35,7 +75,7 @@ export async function clickText(driver: Driver, text: string,
 }
 
 export async function findTextInScroll(driver: Driver, text: string): Promise<Component> {
-  const visible: Component = await driver.waitForComponent(ON.text(text), 500);
+  const visible: Component = await driver.findComponent(ON.text(text));
   if (visible !== null && visible !== undefined) {
     return visible;
   }

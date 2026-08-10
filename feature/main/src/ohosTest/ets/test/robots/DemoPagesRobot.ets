@@ -1,6 +1,6 @@
 import { Component, Driver, ON } from '@kit.TestKit';
 import { DemoNavigator } from 'navigation';
-import { clickText, clickTextInScroll, requireComponent, requireText } from '../framework/UiDriver';
+import { clickText, clickTextInScroll, requireComponent, requireText, waitForUiIdle } from '../framework/UiDriver';
 import { launchMain } from '../support/HarmonyKitTestApp';
 import { MAIN_CARD } from '../support/TestValues';
 
@@ -72,7 +72,7 @@ export class DemoPagesRobot {
     await accountInput.clearText();
     await accountInput.inputText(account);
     await clickTextInScroll(this.driver, '保存');
-    await this.driver.delayMs(300);
+    await waitForUiIdle(this.driver);
 
     await accountInput.clearText();
     await clickTextInScroll(this.driver, '读取');

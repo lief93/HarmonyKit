@@ -46,6 +46,28 @@ feature/main/
 - `Ability.test.ets` 只负责在唯一的 `MainHarUiTest` suite 中注册各组 specs，因此
   `MainHarUiTest#testName` 的命令行与 IDE 选择器保持不变。
 
+## 等待异步界面，不写死休眠
+
+用例和 Robot 不应直接调用 `driver.delayMs()` 猜测页面多久完成。按等待对象选择
+`framework/UiDriver.ets` 中的能力：
+
+- 等控件出现：`requireText()` / `requireComponent()`，内部使用
+  `driver.waitForComponent()`，控件出现后立即继续。
+- 等控件消失：`requireTextAbsent()`，按条件轮询，消失后立即继续。
+- 等动画或滚动停止：`waitForUiIdle()`，内部使用 `driver.waitForIdle()`。
+- 等 Ability 回调、导航栈等可观察状态：`waitForCondition()`，只在条件未满足时轮询。
+- 滚动查找：先用 `findComponent()` 即时检查当前视口；未找到才调用容器的
+  `scrollSearch()`。不要在正常的“当前视口未找到”分支等待超时，也不要在
+  `scrollSearch()` 前后增加固定等待或手写滑动重试。
+
+`waitForIdle()` 只表示 UI 线程进入空闲状态，不表示网络、数据库或业务 Promise 已完成；
+这些场景应等待 Loading/成功/失败控件，或等待可观察的业务测试信号。
+
+当前 loopback 模拟器还有一个实测例外：连续销毁并重启 EntryAbility 时，即使
+`waitForIdle()` 已成功，立即调用 `terminateSelf()` 仍可能让测试进程死亡。因此仅由
+`waitForAbilityRestartSafePoint()` 集中保留 300ms 平台兼容间隔，业务用例不得复制这类
+固定等待。`scripts/tests/uitest-waits.test.sh` 会检查该约束。
+
 ## 不经过生产路由，直接挂载业务组件
 
 鸿蒙 UITest 不只能够从 EntryAbility 沿生产路由进入页面。本项目还提供了一个接近

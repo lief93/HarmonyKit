@@ -55,7 +55,6 @@ export function registerNetworkSpecs(): void {
       pendingRequest.resolve(response);
 
       await page.expectMockData();
-      await page.waitForStateChange();
       await page.expectLoadingAbsent();
     } finally {
       pendingRequest.resolve(response);
@@ -106,9 +105,8 @@ export function registerNetworkSpecs(): void {
 
       await page.expectError();
       await page.retry();
-      await page.waitForStateChange();
-      expect(requestCount).assertEqual(2);
       await page.expectMockData();
+      expect(requestCount).assertEqual(2);
       await page.expectLoadingAbsent();
       mocker.verify('getGoodsInfo', ['1']).times(2);
     } finally {

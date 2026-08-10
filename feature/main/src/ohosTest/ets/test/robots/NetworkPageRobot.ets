@@ -59,10 +59,6 @@ export class NetworkPageRobot {
     await clickText(this.driver, RETRY_TEXT);
   }
 
-  async waitForStateChange(): Promise<void> {
-    await this.driver.delayMs(300);
-  }
-
   async returnToMain(): Promise<void> {
     await this.driver.pressBack();
     await requireText(this.driver, MAIN_CARD);

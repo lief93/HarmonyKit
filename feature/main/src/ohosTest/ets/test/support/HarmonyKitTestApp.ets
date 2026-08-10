@@ -1,10 +1,9 @@
 import { UIAbility, Want } from '@kit.AbilityKit';
 import { abilityDelegatorRegistry, Driver } from '@kit.TestKit';
 import { DemoNavigator, getNavPathStack } from 'navigation';
-import { clickText, requireText } from '../framework/UiDriver';
+import { clickText, requireText, waitForAbilityRestartSafePoint, waitForCondition } from '../framework/UiDriver';
 import { MAIN_CARD, NETWORK_LIST_PAGE_TITLE, NETWORK_PAGE_TITLE, START_TIMEOUT } from './TestValues';
 
-const RESTART_SETTLE_DELAY: number = 300;
 const ENTRY_MODULE_NAME: string = 'entry';
 const ENTRY_ABILITY_NAME: string = 'EntryAbility';
 const MAIN_WANT: Want = {
@@ -39,20 +38,15 @@ export async function launchHost(driver: Driver): Promise<void> {
 
   try {
     if (previousAbility !== undefined) {
-      await driver.delayMs(RESTART_SETTLE_DELAY);
+      await waitForAbilityRestartSafePoint(driver);
       await previousAbility.context.terminateSelf();
-      for (let attempt: number = 0; destroyedAbility !== previousAbility && attempt < 80; attempt++) {
-        await driver.delayMs(100);
-      }
-      if (destroyedAbility !== previousAbility) {
-        throw new Error('previous EntryAbility was not destroyed');
-      }
+      await waitForCondition(driver, (): boolean => destroyedAbility === previousAbility,
+        'previous EntryAbility destruction', START_TIMEOUT);
     }
 
     await delegator.startAbility(MAIN_WANT);
-    for (let attempt: number = 0; createdAbility === undefined && attempt < 80; attempt++) {
-      await driver.delayMs(100);
-    }
+    await waitForCondition(driver, (): boolean => createdAbility !== undefined,
+      'new EntryAbility creation', START_TIMEOUT);
     if (createdAbility === undefined) {
       throw new Error('new EntryAbility was not created');
     }
@@ -61,13 +55,11 @@ export async function launchHost(driver: Driver): Promise<void> {
     }
     hostAbility = createdAbility;
 
-    let navPathStack: NavPathStack | undefined = getNavPathStack();
-    for (let attempt: number = 0;
-      (navPathStack === undefined || navPathStack === previousNavPathStack) && attempt < 80;
-      attempt++) {
-      await driver.delayMs(100);
-      navPathStack = getNavPathStack();
-    }
+    await waitForCondition(driver, (): boolean => {
+      const currentNavPathStack: NavPathStack | undefined = getNavPathStack();
+      return currentNavPathStack !== undefined && currentNavPathStack !== previousNavPathStack;
+    }, 'new navigation stack initialization', START_TIMEOUT);
+    const navPathStack: NavPathStack | undefined = getNavPathStack();
     if (navPathStack === undefined || navPathStack === previousNavPathStack) {
       throw new Error('new navigation stack was not initialized');
     }

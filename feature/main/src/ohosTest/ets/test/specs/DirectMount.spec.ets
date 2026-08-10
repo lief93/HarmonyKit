@@ -62,7 +62,6 @@ export function registerDirectMountSpecs(): void {
       mounted.unmount();
     }
 
-    await driver.delayMs(300);
     await requireTextAbsent(driver, 'Direct mounted business component');
     await requireText(driver, DIRECT_MOUNT_HOST_TEXT);
   });
