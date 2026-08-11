@@ -24,6 +24,6 @@ fi
 
 SELECTOR="$("${NODE_BIN}" \
   "${PROJECT_ROOT}/scripts/resolve-uitest-selector.mjs" \
-  "$1" "$2" "${UITEST_CLASS:-MainHarUiTest}")"
+  "$1" "$2" "${UITEST_CLASS:-MainPageDirectUiTest}")"
 
 exec "${PROJECT_ROOT}/uitest" "${SELECTOR}"

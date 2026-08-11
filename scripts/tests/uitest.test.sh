@@ -20,6 +20,16 @@ HDC_LOG="${TEST_ROOT}/hdc.log"
 ENV_LOG="${TEST_ROOT}/env.log"
 FAKE_DEVECO_HOME="${TEST_ROOT}/DevEco"
 REAL_NODE="$(command -v node)"
+STRESS_FILE="${PROJECT_ROOT}/feature/main/src/ohosTest/ets/test/specs/MainPageStress.test.ets"
+
+STATIC_STRESS_CASES="$(grep -Ec "^[[:space:]]+it\\('survivesRepeatedMountAndTabCycles[0-9]+', 0, async \\(\\) => \\{" \
+  "${STRESS_FILE}" || true)"
+if [[ "${STATIC_STRESS_CASES}" != "12" ]]; then
+  printf 'expected 12 literal page stress it() registrations, found %s\n' \
+    "${STATIC_STRESS_CASES}" >&2
+  exit 1
+fi
+printf 'ok - page stress suite exposes 12 statically discoverable cases\n'
 
 printf 'entry\n' >"${ENTRY_HAP}"
 printf 'test\n' >"${TEST_HAP}"
@@ -60,16 +70,16 @@ DEVECO_STUDIO_HOME="${FAKE_DEVECO_HOME}" \
 SKIP_BUILD=1 \
 ENTRY_HAP="${ENTRY_HAP}" \
 TEST_HAP="${TEST_HAP}" \
-"${UITEST}" 'MainHarUiTest#launchShowsMainPage' >/dev/null
+"${UITEST}" 'MainPageDirectUiTest#showsCorePageWhenMountedIntoTestWindow' >/dev/null
 
 grep -Fq \
-  'shell aa test -b com.joker.kit -m main_test -s unittest /ets/testrunner/OpenHarmonyTestRunner -s class MainHarUiTest#launchShowsMainPage -s timeout 60000 -s coverage false' \
+  'shell aa test -b com.joker.kit -m main_test -s unittest /ets/testrunner/OpenHarmonyTestRunner -s class MainPageDirectUiTest#showsCorePageWhenMountedIntoTestWindow -s timeout 60000 -s coverage false' \
   "${HDC_LOG}"
 grep -Fxq "NODE_HOME=${FAKE_DEVECO_HOME}/tools/node" "${ENV_LOG}"
 
 printf 'ok - one selector maps to class scope and 60000ms timeout\n'
 
-METHOD_FILE="${PROJECT_ROOT}/feature/main/src/ohosTest/ets/test/specs/DirectMount.spec.ets"
+METHOD_FILE="${PROJECT_ROOT}/feature/main/src/ohosTest/ets/test/specs/DirectMount.test.ets"
 METHOD_LINE="$(grep -n -m1 'await requireText(driver, LOADING_TEXT)' "${METHOD_FILE}" | cut -d: -f1)"
 : >"${HDC_LOG}"
 
@@ -79,18 +89,19 @@ FAKE_ENV_LOG="${ENV_LOG}" \
 HDC="${FAKE_HDC}" \
 HVIGORW="${FAKE_HVIGOR}" \
 DEVECO_STUDIO_HOME="${FAKE_DEVECO_HOME}" \
+UITEST_CLASS=DirectMountUiTest \
 SKIP_BUILD=1 \
 ENTRY_HAP="${ENTRY_HAP}" \
 TEST_HAP="${TEST_HAP}" \
 "${UITEST_CURRENT}" "${METHOD_FILE}" "${METHOD_LINE}" >/dev/null
 
 grep -Fq \
-  'shell aa test -b com.joker.kit -m main_test -s unittest /ets/testrunner/OpenHarmonyTestRunner -s class MainHarUiTest#mountsBusinessComponentIntoTestWindowWithoutRoute -s timeout 60000 -s coverage false' \
+  'shell aa test -b com.joker.kit -m main_test -s unittest /ets/testrunner/OpenHarmonyTestRunner -s class DirectMountUiTest#mountsBusinessComponentIntoTestWindowWithoutRoute -s timeout 60000 -s coverage false' \
   "${HDC_LOG}"
 printf 'ok - cursor in an it method runs that method with 60000ms timeout\n'
 
-CLASS_FILE="${PROJECT_ROOT}/feature/main/src/ohosTest/ets/test/Ability.test.ets"
-CLASS_LINE="$(grep -n -m1 'registerNetworkSpecs()' "${CLASS_FILE}" | cut -d: -f1)"
+CLASS_FILE="${PROJECT_ROOT}/feature/main/src/ohosTest/ets/test/specs/MainPage.test.ets"
+CLASS_LINE="$(grep -n -m1 "describe('MainPageDirectUiTest'" "${CLASS_FILE}" | cut -d: -f1)"
 : >"${HDC_LOG}"
 
 FAKE_REAL_NODE="${REAL_NODE}" \
@@ -105,7 +116,7 @@ TEST_HAP="${TEST_HAP}" \
 "${UITEST_CURRENT}" "${CLASS_FILE}" "${CLASS_LINE}" >/dev/null
 
 grep -Fq \
-  'shell aa test -b com.joker.kit -m main_test -s unittest /ets/testrunner/OpenHarmonyTestRunner -s class MainHarUiTest -s timeout 60000 -s coverage false' \
+  'shell aa test -b com.joker.kit -m main_test -s unittest /ets/testrunner/OpenHarmonyTestRunner -s class MainPageDirectUiTest -s timeout 60000 -s coverage false' \
   "${HDC_LOG}"
 printf 'ok - cursor in a describe class runs that class with 60000ms timeout\n'
 

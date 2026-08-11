@@ -1,10 +1,14 @@
-import { Component, Driver, ON, On } from '@kit.TestKit';
+import { Component, Driver, ON, On, Rect } from '@kit.TestKit';
 import { expect } from '@ohos/hypium';
 
 const DEFAULT_TIMEOUT: number = 3000;
 const DEFAULT_ABSENCE_TIMEOUT: number = 500;
 const DEFAULT_POLL_INTERVAL: number = 100;
 const ABILITY_RESTART_SETTLE_DELAY: number = 300;
+const FAST_SCROLL_SPEED: number = 4000;
+const FAST_SCROLL_MAX_SWIPES: number = 12;
+const FAST_SCROLL_START_RATIO: number = 0.8;
+const FAST_SCROLL_END_RATIO: number = 0.2;
 
 // The loopback emulator can kill the test process when an ability is terminated
 // immediately after the previous UI interaction, even after waitForIdle succeeds.
@@ -74,6 +78,29 @@ export async function clickText(driver: Driver, text: string,
   await component.click();
 }
 
+export async function fastScrollFind(driver: Driver, scroll: Component, on: On,
+  description: string, maxSwipes: number = FAST_SCROLL_MAX_SWIPES): Promise<Component> {
+  const bounds: Rect = await scroll.getBounds();
+  const centerX: number = Math.round((bounds.left + bounds.right) / 2);
+  const height: number = bounds.bottom - bounds.top;
+  const startY: number = Math.round(bounds.top + height * FAST_SCROLL_START_RATIO);
+  const endY: number = Math.round(bounds.top + height * FAST_SCROLL_END_RATIO);
+
+  for (let swipeCount: number = 0; swipeCount <= maxSwipes; swipeCount++) {
+    const component: Component = await driver.findComponent(on);
+    if (component !== null && component !== undefined) {
+      return component;
+    }
+
+    if (swipeCount < maxSwipes) {
+      await driver.swipe(centerX, startY, centerX, endY, FAST_SCROLL_SPEED);
+      await waitForUiIdle(driver);
+    }
+  }
+
+  throw new Error(`${description} was not found after ${maxSwipes} fast scrolls`);
+}
+
 export async function findTextInScroll(driver: Driver, text: string): Promise<Component> {
   const visible: Component = await driver.findComponent(ON.text(text));
   if (visible !== null && visible !== undefined) {
@@ -81,13 +108,7 @@ export async function findTextInScroll(driver: Driver, text: string): Promise<Co
   }
 
   const scroll: Component = await requireComponent(driver, ON.type('Scroll'), 'scroll container');
-  const result: Component = await scroll.scrollSearch(ON.text(text));
-  const found: boolean = result !== null && result !== undefined;
-  if (!found) {
-    throw new Error(`text '${text}' was not found in scroll container`);
-  }
-  expect(found).assertTrue();
-  return result;
+  return fastScrollFind(driver, scroll, ON.text(text), `text '${text}'`);
 }
 
 export async function clickTextInScroll(driver: Driver, text: string): Promise<void> {

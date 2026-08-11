@@ -1,11 +1,12 @@
 import { UIAbility } from '@kit.AbilityKit';
 import { abilityDelegatorRegistry, Driver } from '@kit.TestKit';
-import { expect, it } from '@ohos/hypium';
+import { describe, expect, it } from '@ohos/hypium';
 import { getNavPathStack } from 'navigation';
 import { MainPageRobot } from '../robots/MainPageRobot';
 import { getStringResource, launchHost } from '../support/HarmonyKitTestApp';
 
 export function registerMainPageSpecs(): void {
+  describe('MainPageUiTest', () => {
   it('launchShowsMainPage', 0, async () => {
     const driver: Driver = Driver.create();
     const page: MainPageRobot = new MainPageRobot(driver);
@@ -64,5 +65,6 @@ export function registerMainPageSpecs(): void {
 
     await page.openTab('核心');
     await page.expectMainCard();
+  });
   });
 }

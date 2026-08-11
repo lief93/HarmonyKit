@@ -11,3 +11,5 @@ export { BaseNetWorkUiState } from "./src/main/ets/state/BaseNetWorkUiState";
 export { BaseNetWorkListUiState } from "./src/main/ets/state/BaseNetWorkListUiState";
 
 export { BaseNetWorkListViewModel } from "./src/main/ets/viewmodel/BaseNetWorkListViewModel";
+
+export { LifecycleFaultInjection } from "./src/main/ets/testability/LifecycleFaultInjection";

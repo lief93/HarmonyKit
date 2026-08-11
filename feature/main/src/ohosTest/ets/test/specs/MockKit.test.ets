@@ -1,4 +1,4 @@
-import { ArgumentMatchers, expect, it, MockKit, when } from '@ohos/hypium';
+import { ArgumentMatchers, describe, expect, it, MockKit, when } from '@ohos/hypium';
 
 class MockPayload {
   readonly name: string;
@@ -56,7 +56,8 @@ class OwnMethodService {
   }
 }
 
-export function registerMockKitSpecs(): void {
+export default function mockKitTest(): void {
+  describe('MockKitTest', () => {
   it('mockKitReturnsValuesForExactArguments', 0, () => {
     const mocker: MockKit = new MockKit();
     const service: MockApiService = new MockApiService();
@@ -214,5 +215,6 @@ export function registerMockKitSpecs(): void {
     } finally {
       mocker.clear(service);
     }
+  });
   });
 }

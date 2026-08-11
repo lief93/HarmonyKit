@@ -1,11 +1,12 @@
 import { Driver } from '@kit.TestKit';
-import { ArgumentMatchers, it, MockKit, when } from '@ohos/hypium';
+import { ArgumentMatchers, describe, it, MockKit, when } from '@ohos/hypium';
 import { GoodsRepository, GoodsRepositoryProvider } from 'data';
 import { Goods, GoodsSearchRequest, NetworkPageData, NetworkResponse } from 'model';
 import { NetworkListPageRobot } from '../robots/NetworkListPageRobot';
 import { createEmptyGoodsPageResponse, createMockGoodsPageResponse } from '../support/GoodsFixtures';
 
 export function registerNetworkListSpecs(): void {
+  describe('NetworkListPageUiTest', () => {
   it('showsEmptyStateForMockedListResponse', 0, async () => {
     const mocker: MockKit = new MockKit();
     const repository: GoodsRepository = new GoodsRepository();
@@ -47,5 +48,6 @@ export function registerNetworkListSpecs(): void {
       GoodsRepositoryProvider.reset();
       mocker.clear(repository);
     }
+  });
   });
 }

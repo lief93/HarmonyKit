@@ -1,8 +1,9 @@
 import { Driver } from '@kit.TestKit';
-import { it } from '@ohos/hypium';
+import { describe, it } from '@ohos/hypium';
 import { DemoPagesRobot } from '../robots/DemoPagesRobot';
 
 export function registerDemoPagesSpecs(): void {
+  describe('DemoPagesUiTest', () => {
   it('opensStatePageDirectlyAndUpdatesCounter', 0, async () => {
     const driver: Driver = Driver.create();
     const page: DemoPagesRobot = new DemoPagesRobot(driver);
@@ -31,5 +32,6 @@ export function registerDemoPagesSpecs(): void {
 
     await page.saveAndLoadAccount(testAccount);
     await page.expectText(testAccount);
+  });
   });
 }

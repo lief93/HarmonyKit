@@ -1,5 +1,5 @@
 import { Driver } from '@kit.TestKit';
-import { ArgumentMatchers, expect, it, MockKit, when } from '@ohos/hypium';
+import { ArgumentMatchers, describe, expect, it, MockKit, when } from '@ohos/hypium';
 import { GoodsRepository, GoodsRepositoryProvider } from 'data';
 import { Goods, NetworkResponse } from 'model';
 import { createDeferred, Deferred } from '../framework/Deferred';
@@ -7,6 +7,7 @@ import { NetworkPageRobot } from '../robots/NetworkPageRobot';
 import { createBusinessErrorResponse, createMockGoodsResponse } from '../support/GoodsFixtures';
 
 export function registerNetworkSpecs(): void {
+  describe('NetworkPageUiTest', () => {
   it('opensNetworkPageAndReturns', 0, async () => {
     const driver: Driver = Driver.create();
     const page: NetworkPageRobot = new NetworkPageRobot(driver);
@@ -113,5 +114,6 @@ export function registerNetworkSpecs(): void {
       GoodsRepositoryProvider.reset();
       mocker.clear(repository);
     }
+  });
   });
 }

@@ -23,13 +23,14 @@ feature/main/
     ├── main/                         # 真实业务页面与逻辑
     └── ohosTest/
         ├── module.json5              # type: feature 的测试 HAP
-        └── ets/test/
-            ├── framework/            # 可复用的 Driver/异步测试基础能力
-            ├── support/              # 项目适配、fixture 与宿主生命周期
-            ├── robots/               # 页面操作和页面断言
-            ├── specs/                # Hypium 业务测试语义
-            ├── Ability.test.ets      # 只组合 MainHarUiTest 测试套
-            └── List.test.ets          # 测试入口
+        ├── ets/test/
+        │   ├── framework/            # 可复用的 Driver/异步测试基础能力
+        │   ├── support/              # 项目适配、fixture 与宿主生命周期
+        │   ├── robots/               # 页面操作和页面断言
+        │   ├── specs/                # 页面级 .test.ets 与 App 流程 .spec.ets
+        │   └── List.test.ets         # 直接注册全部测试函数
+        ├── ets/testability/          # TestAbility 与测试窗口
+        └── ets/testrunner/           # 源码级 OpenHarmonyTestRunner
 ```
 
 `feature/main/build-profile.json5` 声明了 `ohosTest` target。测试 HAP 的
@@ -42,9 +43,13 @@ feature/main/
 - `support` 负责 bundle、EntryAbility、导航栈隔离、资源文案、业务模型和 fixture，迁移到
   其他项目时需要替换。
 - `robots` 把 Driver 细节组织成页面级操作与断言，不注册 Hypium 用例。
-- `specs` 表达业务流程、Mock 生命周期和测试数据，并保留稳定的用例名称。
-- `Ability.test.ets` 只负责在唯一的 `MainHarUiTest` suite 中注册各组 specs，因此
-  `MainHarUiTest#testName` 的命令行与 IDE 选择器保持不变。
+- `specs/*.test.ets` 是 DevEco 原生绿色按钮入口。文件默认导出测试注册函数，且由
+  `List.test.ets` 直接 import 并调用；这是 DevEco 静态发现器的要求。
+- `specs/*.spec.ets` 表达需要 entry HAP 的真实 App 路由、Mock 生命周期和压力流程；它们
+  仍由 `List.test.ets` 注册，但不伪装成 HAR 测试 HAP 单独安装后即可运行的 IDE 入口。
+- `OpenHarmonyTestRunner.ets` 和 `TestAbility.ets` 是真正的设备端自定义 Runner，不是 shell
+  别名。Runner 启动 TestAbility，TestAbility 在调用 Hypium 前把低于 300000ms 的 case
+  timeout 提升到 300000ms。
 
 ## 等待异步界面，不写死休眠
 
@@ -74,7 +79,7 @@ feature/main/
 Compose UI Test `setContent` 的设备测试示例：
 
 ```bash
-./uitest 'MainHarUiTest#mountsBusinessComponentIntoTestWindowWithoutRoute'
+./uitest 'DirectMountUiTest#mountsBusinessComponentIntoTestWindowWithoutRoute'
 ```
 
 该用例取得 HAR 测试 HAP 自动生成的 `TestAbility` 及其窗口，通过
@@ -87,7 +92,11 @@ Driver 验证 Loading、点击切换到 Success，以及卸载后的窗口恢复
 
 - `framework/ComponentMount.ets`：把任意无参数 `WrappedBuilder` 挂到当前测试窗口，并返回
   可卸载的句柄。
-- `specs/DirectMount.spec.ets`：定义测试专用宿主、挂载真实业务组件并执行 Driver 断言。
+- `specs/DirectMount.test.ets`：定义测试专用宿主、挂载真实业务组件并执行 Driver 断言。
+- `specs/MainPage.test.ets`：直接挂载真实生产 `MainPage`，按页面组织渲染、Tab 交互和资源
+  文案 3 个 case；只安装 HAR 测试 HAP 即可执行。
+- `specs/MainPageStress.test.ets`：页面级连续压力套，单次 Runner 内运行 12 个 case；每个
+  case 反复挂载/卸载真实 `MainPage`、切换四个 Tab、滚动查找末端控件并恢复测试窗口。
 - 每次挂载都必须在 `finally` 中调用 `unmount()`；它会先从 Overlay 移除内容，再
   `dispose()`，避免污染后续用例。
 
@@ -103,13 +112,13 @@ EntryAbility 生命周期，就不能把这些依赖当作不存在；应直接�
 选择、entry + HAR 测试 HAP 安装和严格报告校验，并把测试超时固定为 60 秒：
 
 ```bash
-./uitest 'MainHarUiTest#opensNetworkPageAndReturns'
+./uitest 'NetworkPageUiTest#opensNetworkPageAndReturns'
 ```
 
 也可以只指定整个测试套：
 
 ```bash
-./uitest MainHarUiTest
+./uitest MainPageDirectUiTest
 ```
 
 零参数、多个参数或不符合 `ClassName[#testName]` 的选择器会直接失败。只有一个 HDC
@@ -131,7 +140,31 @@ Node 补齐行为严格如下：
 因此默认零配置路径仅适用于 DevEco Studio 安装在
 `/Applications/DevEco-Studio.app/Contents` 的 macOS 环境。
 
-### DevEco 光标感知运行：不输入测试名称
+### DevEco 原生绿色按钮：不输入测试名称
+
+可直接打开 `specs/MainPage.test.ets`，点击 `describe('MainPageDirectUiTest')` 左侧绿色按钮，
+一次运行该页面的 3 个 case；点击某个 `it()` 左侧按钮则只运行该 case。无需 External Tool，
+也无需输入选择器。
+
+连续运行压力测试可打开 `specs/MainPageStress.test.ets`，点击
+`describe('MainPageStressUiTest')` 左侧绿色按钮；一次测试进程会连续运行 12 个 case，
+用于观察长流程下是否出现未完成 case 或 DevEco `Stopped`。
+
+DevEco 静态发现有两条硬约束：
+
+- 可点击入口文件必须以 `.test.ets` 结尾；
+- 该文件的测试函数必须 `default export`，并在 `List.test.ets` 中通过 default import 直接
+  调用，不能隔着聚合文件再转一层。
+
+绿色按钮仍会生成 `-s timeout 15000`，但测试 HAP 内的自定义 TestAbility 会在 Hypium
+启动前把它提升到 300000ms。设备日志可通过 `HarmonyKitTestRunner` tag 看到
+`custom runner onPrepare`、`custom runner onRun` 和 `timeout=300000`。
+
+HAR 的绿色按钮只安装 HAR 测试 HAP。适合 `MainPage.test.ets`、`DirectMount.test.ets` 这类
+直接挂载页面/组件的测试；需要启动真实 `entry/EntryAbility` 的 `.spec.ets` 流程必须使用
+下方 `uitest`/`run-har-uitest.sh` 双 HAP 入口。
+
+### DevEco External Tool 备用：光标感知运行
 
 第一阶段复用 DevEco 已经显示绿色运行标记的 Hypium 结构：`describe()` 视为测试类，
 `it()` 视为测试方法。在 `Settings > Tools > External Tools` 新增
@@ -146,18 +179,15 @@ Working directory: $ProjectFileDir$
 再到 `Settings > Keymap > External Tools > Run UITest at Cursor (60s)` 绑定团队约定的
 快捷键。使用时不弹输入框：
 
-- 光标位于一个 `it()` 调用的声明行或方法体内，运行
-  `MainHarUiTest#当前方法名`。
+- 光标位于一个 `it()` 调用的声明行或方法体内，运行所在 `describe()` 的
+  `SuiteName#当前方法名`。
 - 光标位于一个 `describe()` 类体内、但不位于嵌套的 `it()` 中，运行该测试类。
 - 光标不在上述范围，立即报错，不猜测也不误跑整个套件。
 
 `uitest-current` 会忽略注释、普通字符串和模板字符串中的伪 `it`/`describe`，支持多行
-测试方法。当前 HAR 的 specs 分文件注册到唯一的 `MainHarUiTest`，因此独立 spec 文件内
-的 `it()` 默认映射到该类；其他测试类可通过固定环境变量 `UITEST_CLASS` 覆盖。
+测试方法，并优先使用当前文件内的页面 suite。
 
-这个入口感知的是与绿色运行标记相同的类和方法，但触发动作是自定义快捷键或
-`Tools > External Tools` 菜单；第一阶段不会接管原生绿色按钮，点击原生按钮仍可能受到
-DevEco 的 15 秒限制。
+这个入口用于必须同时安装 entry HAP 的 App 流程，或作为原生按钮的命令行备用入口。
 
 `uitest-current` 需要 Node 来解析当前 ArkTS 文件，查找顺序依次是
 `${NODE_HOME}/bin/node`、`${DEVECO_STUDIO_HOME:-默认 DevEco Contents}/tools/node/bin/node`
@@ -174,7 +204,7 @@ Working directory: $ProjectFileDir$
 ```
 
 运行 `UITest by Selector (60s)` 后，DevEco 会弹出一个 `Enter parameters` 输入框；输入
-`MainHarUiTest#testName` 即可。该 External Tool 与命令行共用同一个 `uitest`，没有
+`NetworkPageUiTest#testName` 即可。该 External Tool 与命令行共用同一个 `uitest`，没有
 第二套构建或设备脚本。
 
 External Tool 是 DevEco 的**本机用户级配置**，不属于仓库文件。DevEco Studio 6.1
@@ -245,7 +275,7 @@ DEVICE_ID=127.0.0.1:5555 ./scripts/run-har-uitest.sh
 HVIGORW=/path/to/hvigorw \
 HDC=/path/to/hdc \
 DEVICE_ID=127.0.0.1:5555 \
-TEST_SCOPE=MainHarUiTest \
+TEST_SCOPE=NetworkPageUiTest \
 ./scripts/run-har-uitest.sh
 ```
 

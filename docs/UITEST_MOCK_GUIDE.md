@@ -10,7 +10,7 @@
 ## 可运行示例索引
 
 MockKit API 示例位于
-`feature/main/src/ohosTest/ets/test/specs/MockKit.spec.ets`：
+`feature/main/src/ohosTest/ets/test/specs/MockKit.test.ets`：
 
 | 场景 | 示例 |
 | --- | --- |
@@ -96,14 +96,14 @@ Mock 必须在打开页面之前注入，因为 ViewModel 构造时会从 Provid
 执行单个示例：
 
 ```bash
-./uitest 'MainHarUiTest#retriesMockedBusinessFailureAndShowsData'
+./uitest 'NetworkPageUiTest#retriesMockedBusinessFailureAndShowsData'
 ```
 
 执行完整 HAR UITest：
 
 ```bash
-./uitest MainHarUiTest
+./scripts/run-har-uitest.sh
 ```
 
-当前示例集已在 `127.0.0.1:5555` 模拟器完成正常构建模式回归：
-`Tests run: 25, Failure: 0, Error: 0, Pass: 25, Ignore: 0`。
+纯 MockKit suite 也可从 `MockKit.test.ets` 使用 DevEco 原生绿色按钮运行；需要真实页面路由
+的 Mock UI 流程仍使用 entry + HAR 测试 HAP 双包入口。
