@@ -90,4 +90,12 @@ export class DemoNavigator {
   static toScreenAdaptDemo(): void {
     navigateTo(DemoRoutes.ScreenAdaptDemo);
   }
+
+  /**
+   * 跳转到轮播组件示例页
+   * @returns {void} 无返回值
+   */
+  static toCarouselDemo(): void {
+    navigateTo(DemoRoutes.CarouselDemo);
+  }
 }

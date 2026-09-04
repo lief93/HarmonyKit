@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1400" viewBox="0 0 900 1400">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5D245B"/><stop offset="0.55" stop-color="#E47C68"/><stop offset="1" stop-color="#FFBE77"/></linearGradient>
+    <linearGradient id="dune" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F5AC6A"/><stop offset="1" stop-color="#9B3D4D"/></linearGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0.38" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#180916" stop-opacity="0.9"/></linearGradient>
+  </defs>
+  <rect width="900" height="1400" fill="url(#sky)"/>
+  <circle cx="670" cy="330" r="118" fill="#FFE3A9" opacity="0.9"/>
+  <path d="M0 720 C260 560 540 650 900 530 L900 1400 L0 1400 Z" fill="#D86F5C"/>
+  <path d="M0 900 C300 640 570 920 900 690 L900 1400 L0 1400 Z" fill="url(#dune)"/>
+  <path d="M0 1050 C280 820 560 1010 900 880 L900 1400 L0 1400 Z" fill="#713147" opacity="0.72"/>
+  <g fill="#FFF4D6" opacity="0.55"><circle cx="120" cy="230" r="3"/><circle cx="260" cy="410" r="2"/><circle cx="460" cy="230" r="2"/></g>
+  <rect width="900" height="1400" fill="url(#fade)"/>
+</svg>

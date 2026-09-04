@@ -22,6 +22,11 @@ export default class ExpandViewModel extends BaseViewModel {
       title: $r("app.string.main_expand_screen_adapt_title"),
       description: $r("app.string.main_expand_screen_adapt_desc"),
       onClick: () => DemoNavigator.toScreenAdaptDemo()
+    },
+    {
+      title: $r("app.string.main_expand_carousel_title"),
+      description: $r("app.string.main_expand_carousel_desc"),
+      onClick: () => DemoNavigator.toCarouselDemo()
     }
   ];
 }

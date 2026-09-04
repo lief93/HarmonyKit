@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1400" viewBox="0 0 900 1400">
+  <defs>
+    <linearGradient id="mist" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#91BDAE"/><stop offset="0.55" stop-color="#315E58"/><stop offset="1" stop-color="#102B2A"/></linearGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0.35" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#061412" stop-opacity="0.94"/></linearGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="26"/></filter>
+  </defs>
+  <rect width="900" height="1400" fill="url(#mist)"/>
+  <ellipse cx="430" cy="430" rx="430" ry="210" fill="#D4F1DF" opacity="0.22" filter="url(#blur)"/>
+  <g fill="#183F38"><path d="M100 790 L235 250 L370 790 Z"/><path d="M430 820 L575 180 L720 820 Z"/><path d="M640 850 L790 330 L940 850 Z"/><path d="M-120 880 L35 360 L190 880 Z"/></g>
+  <g fill="#0B2824" opacity="0.88"><path d="M30 1050 L190 430 L350 1050 Z"/><path d="M330 1080 L485 410 L640 1080 Z"/><path d="M600 1090 L760 460 L920 1090 Z"/></g>
+  <path d="M0 950 C220 850 520 910 900 780 L900 1400 L0 1400 Z" fill="#102D27" opacity="0.8"/>
+  <rect width="900" height="1400" fill="url(#fade)"/>
+</svg>

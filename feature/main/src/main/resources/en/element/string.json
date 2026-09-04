@@ -191,6 +191,14 @@
     {
       "name": "main_expand_screen_adapt_desc",
       "value": "Shows breakpoint and window width for responsive layouts."
+    },
+    {
+      "name": "main_expand_carousel_title",
+      "value": "Carousel"
+    },
+    {
+      "name": "main_expand_carousel_desc",
+      "value": "Auto-play, swipe gestures, card previews, and animated indicators."
     }
   ]
 }

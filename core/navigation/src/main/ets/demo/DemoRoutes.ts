@@ -42,5 +42,9 @@ export const DemoRoutes = {
   /**
    * 屏幕适配示例页路由
    */
-  ScreenAdaptDemo: "demo/screen-adapt-demo"
+  ScreenAdaptDemo: "demo/screen-adapt-demo",
+  /**
+   * 轮播组件示例页路由
+   */
+  CarouselDemo: "demo/carousel-demo"
 };

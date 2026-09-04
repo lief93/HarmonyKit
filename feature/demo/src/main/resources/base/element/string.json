@@ -263,6 +263,58 @@
     {
       "name": "demo_screen_adapt_size_label",
       "value": "示例尺寸：%s"
+    },
+    {
+      "name": "demo_carousel_back",
+      "value": "返回"
+    },
+    {
+      "name": "demo_carousel_brand",
+      "value": "WANDER"
+    },
+    {
+      "name": "demo_carousel_heading",
+      "value": "Discover"
+    },
+    {
+      "name": "demo_carousel_badge",
+      "value": "ARKUI"
+    },
+    {
+      "name": "demo_carousel_aurora_place",
+      "value": "SCANDINAVIA"
+    },
+    {
+      "name": "demo_carousel_aurora_title",
+      "value": "Chase the\nnorthern light"
+    },
+    {
+      "name": "demo_carousel_aurora_desc",
+      "value": "Quiet skies, frozen lakes and a little magic."
+    },
+    {
+      "name": "demo_carousel_desert_place",
+      "value": "SAHARA"
+    },
+    {
+      "name": "demo_carousel_desert_title",
+      "value": "Follow the\ndesert sun"
+    },
+    {
+      "name": "demo_carousel_desert_desc",
+      "value": "Warm horizons and endless golden silence."
+    },
+    {
+      "name": "demo_carousel_forest_place",
+      "value": "NORTHWEST"
+    },
+    {
+      "name": "demo_carousel_forest_title",
+      "value": "Find your\nquiet place"
+    },
+    {
+      "name": "demo_carousel_forest_desc",
+      "value": "Misty mornings beneath ancient green giants."
     }
   ]
 }
